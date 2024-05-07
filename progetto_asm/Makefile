@@ -1,28 +1,20 @@
-AS_FLAGS = --32 -g  ; Compile as ELF 32-bit with debugging symbols
+AS_FLAGS = --32 
 DEBUG = -gstabs
 LD_FLAGS = -m elf_i386
 
-# Target executable name (customize if needed)
-TARGET = bin/my_program
+all: bin/eseguibile
 
-# Source and object file directories (adjust as needed)
-SRC_DIR = src/
-OBJ_DIR = obj/
+bin/eseguibile: obj/main.o obj/EDF.o obj/HPF.o
+	ld $(LD_FLAGS) obj/main.o obj/EDF.o obj/HPF.o -o bin/eseguibile
 
-# Source files (modify the list)
-SRC_FILES = main.s EDF.s HPF.s
+obj/main.o: src/main.s
+	as $(AS_FLAGS) $(DEBUG) src/main.s -o obj/main.o
 
+obj/EDF.o: src/EDF.s
+	as $(AS_FLAGS) $(DEBUG) src/EDF.s -o obj/EDF.o
 
-# Object files (automatically generated)
-OBJECTS = $(patsubst $(SRC_DIR)/%.s, $(OBJ_DIR)/%.o, $(SRC_FILES))
+obj/HPF.o: src/HPF.s
+	as $(AS_FLAGS) $(DEBUG) src/HPF.s -o obj/HPF.o
 
-all: $(TARGET)
-
-$(TARGET): $(OBJECTS)
-	ld $(LD_FLAGS) $(OBJECTS) -o $(TARGET)
-
-$(OBJ_DIR)/%.o: $(SRC_DIR)/%.s $(INCLUDE_FILES)
-	$(AS) $(AS_FLAGS) -I$(SRC_DIR) $< -o $@  # Include source directory for header files
-
-clean:
-	rm -f $(OBJECTS) $(TARGET)
+#clean:
+#	rm -f obj/*.o bin/itoa

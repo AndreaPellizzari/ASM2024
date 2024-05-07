@@ -30,23 +30,27 @@ _ripeti:
 	int $0x80             # Execute syscall
 
     cmp $1, %ecx
-    JE _EDF
+    je EDF
 
     cmp $2, %ecx
-    JE _HPF
+    je HPF
 
     jmp _ripeti
 
 
-_EDF:
+EDF:
+    movl $4, %eax	        # Set system call WRITE
+	movl $1, %ebx	        # | <- standard output (video)
+	leal scelta, %ecx        # | <- destination
+	movl $2, %edx        # | <- length
+    int $0x80 
     call edf
     jmp _ripeti
 
 
-_HPF:
+HPF:
     call hpf
     jmp _ripeti
-
 
     movl $1, %eax                   # Systemcall EXIT
     movl $0, %ebx                   # codice di uscita 0
