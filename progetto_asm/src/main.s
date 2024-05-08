@@ -29,10 +29,13 @@ _ripeti:
 	movl $3, %edx        # | <- string length
 	int $0x80             # Execute syscall
 
-    cmp $1, %ecx
+
+    movl scelta, %eax
+    movl (%eax), %eax
+    cmpl $1, scelta
     je EDF
 
-    cmp $2, %ecx
+    cmpl $2, %eax
     je HPF
 
     jmp _ripeti
