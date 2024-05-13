@@ -6,12 +6,9 @@
 
 .section .data
 
-.section .text
-  .global _converti
-
+.section .textEAX
 .type _converti, @function
 _converti:
-  movl 12(%esp), %ecx
   pop %esp
   leal (%ecx), %esi
   movl $0, %ecx            # azzero il contatore
@@ -35,6 +32,6 @@ ripeti:
 
 
 fine:
-  # il risultato si trova in EAX
+  # il risultato si trova in ebx
   movl $0, %ebx
   int $0x80

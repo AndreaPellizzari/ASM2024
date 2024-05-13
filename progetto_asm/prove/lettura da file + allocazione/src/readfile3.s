@@ -8,6 +8,11 @@ buffer: .string ""       # Spazio per il buffer di input
 newline: .byte 10        # Valore del simbolo di nuova linea
 lines: .int 0            # Numero di linee
 temp: .int 0
+i: .int 0
+
+struct_size: .long 16     # dimensione totale della struttura (4 interi)
+array_size: .long 10      # dimensione iniziale dell'array
+array_ptr: .long 0        # puntatore all'array di strutture
 
 .section .bss
 
@@ -24,7 +29,6 @@ _open:
     # Se c'è un errore, esce
     cmp $0, %eax
     jl _exit
-
     mov %eax, fd      # Salva il file descriptor in ebx
 
 # Legge il file riga per riga
@@ -33,8 +37,7 @@ _read_loop:
     mov fd, %ebx        # File descriptor
     mov $buffer, %ecx   # Buffer di input
     mov $1, %edx        # Lunghezza massima
-    int $0x80           # Interruzione del kernel
-
+    int $0x80        
     cmp $0, %eax        # Controllo se ci sono errori o EOF
     jle _close_file     # Se ci sono errori o EOF, chiudo il file
     
@@ -46,11 +49,12 @@ _read_loop:
     push temp
     movl $0, temp
 
+
 _print_line:
 
 #    mov $4, %eax        # syscall write
 #    mov $1, %ebx        # File descriptor standard output (stdout)
-#    mov $buffer, %ecx   # Buffer di output
+#    mov $buffer, %ecx push temp  # Buffer di output
 #    int $0x80
 
     movb buffer, %bl
@@ -60,28 +64,24 @@ _print_line:
 
     mov $4, %eax        # syscall write
     mov $1, %ebx        # File descriptor standard output (stdout)
-#   mov $buffer, %ecx   # Buffer di output
-    int $0x80           # Interruzione del kernel
-
-    //CONVERSIONE
-    cmp $10, %bl             # vedo se e' stato letto il carattere '\n'
-    je fine
-
-    subb $48, %bl            # converte il codice ASCII della cifra nel numero corrisp.
-    movl $10, %edx
+    mov $buffer, %ecx   # Buffer di output
+    int $0x80           # addl $4, imovl temp, (%edi)
     mulb %dl                # EBX = EBX * 10
     addl %ebx, %eax
     movl %eax, temp
 
-    mov $4, %eax        # syscall write
-    mov $1, %ebx        # File descriptor standard output (stdout)
-    mov (temp), %ecx   # Buffer di output
-    int $0x80           # Interruzione del kernel
+    // in temp abbiamo i valori senza virgola
 
     jmp _read_loop      # Torna alla lettura del file
 
 _virgola_trovata:
-    push temp
+    movl array_ptr, %edi         # Carica l'indirizzo di memoria dell'array di strutture in EDI
+    movl lines, %ecx             # Carica il numero corrente di linee lette in ECX (indice dell'array)
+    imull $struct_size, %ecx     # Calcola l'offset (dimensione di ogni struttura * indice)
+    leal (%edi, %ecx), %edi      # Calcola l'indirizzo corrente dell'array di strutture
+    movl temp, (%edi)            # Salva il valore temporaneo nella posizione corrente dell'array
+    incw i
+
     movl $0, temp
     
     jmp _read_loop
@@ -98,6 +98,23 @@ _exit:
     int $0x80           # Interruzione del kernel
 
 _start:
+    # Calcola la dimensione totale dell'array
+    mov $struct_size, %eax       # car    movl array_ptr, iica la dimensione totale della struttura in eax
+    imul array_size, %eax        # moltiplica per il numero di strutture nell'array
+    mov %eax, %ebx               # salva il risultato in ebx
+    
+    # Alloca memoria per l'array di strutture
+    mov $0, %edi            # EDI = NULL
+    mov %ebx, %ebx          # EBX = dimensione totale dell'array
+    mov $12, %eax            # syscall brk (numero 4)
+    int $0x80               # Interruzione del kernel
+    
+    # Controlla se c'è stato un errore durante l'allocazione di memoria
+    cmp $-1, %eax
+    je _exit                # Se c'è stato un errore, esce
+    
+    mov %eax, array_ptr     # Salva il puntatore all'array
+
     jmp _open          # Chiama la funzione per aprire il file
 
     # Fine programma
