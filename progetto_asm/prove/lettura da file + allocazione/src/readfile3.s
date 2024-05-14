@@ -46,7 +46,8 @@ _read_loop:
     cmpb newline, %al   # confronto AL con il carattere \n
     jne _print_line     # se sono diversi stampo la linea
     incw lines          # altrimenti, incremento il contatore
-    push temp
+    incw i
+    # rimane da aggiungere
     movl $0, temp
 
 
@@ -76,7 +77,7 @@ _print_line:
 
 _virgola_trovata:
     movl array_ptr, %edi         # Carica l'indirizzo di memoria dell'array di strutture in EDI
-    movl lines, %ecx             # Carica il numero corrente di linee lette in ECX (indice dell'array)
+    movl i, %ecx             # Carica il numero corrente di linee lette in ECX (indice dell'array)
     imull $struct_size, %ecx     # Calcola l'offset (dimensione di ogni struttura * indice)
     leal (%edi, %ecx), %edi      # Calcola l'indirizzo corrente dell'array di strutture
     movl temp, (%edi)            # Salva il valore temporaneo nella posizione corrente dell'array
