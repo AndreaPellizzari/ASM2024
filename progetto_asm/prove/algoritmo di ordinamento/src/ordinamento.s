@@ -19,6 +19,8 @@ outer_loop:
     mov %ecx, %ebx         # Inizializza l'indice minimo con l'indice corrente
     movl array(%ecx), %eax # Carica il valore corrente come minimo
 
+    jmp inner_loop
+
 inner_loop:
     inc %esi              # Incrementa l'indice interno (indice j)
     
@@ -26,11 +28,14 @@ inner_loop:
     je end_sort                 # Se sì, termina il loop interno
 
     movl array(%esi), %edx      # Carica il valore corrente nell'array
+
     cmpl %edx, %eax             # Confronta il valore corrente con il minimo
-    jge no_swap                 # Se il valore corrente non è minore, salta lo scambio
+    jge inner_loop              # Se il valore corrente non è minore, salta lo scambio
 
     mov %edx, %eax              # Aggiorna il valore minimo
     mov %esi, %ebx              # Aggiorna l'indice del valore minimo
+
+    jmp swap
 
 no_swap:
     jmp inner_loop              # Ripete il loop interno
