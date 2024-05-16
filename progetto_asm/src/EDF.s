@@ -1,7 +1,7 @@
 .section .data
 
-scelta: .ascii "Hai scelto l'algoritmo EDF:\n\n"
-sceltalenght: .long . - scelta
+scelta2: .ascii "Hai scelto l'algoritmo EDF:\n\n"
+scelta2lenght: .long . - scelta2
 
 .section .text
 	.global edf
@@ -10,8 +10,8 @@ sceltalenght: .long . - scelta
 edf:
     movl $4, %eax	        # Set system call WRITE
 	movl $1, %ebx	        # | <- standard output (video)
-	leal scelta, %ecx        # | <- destination
-	movl sceltalenght, %edx        # | <- length
+	leal scelta2, %ecx        # | <- destination
+	movl scelta2lenght, %edx        # | <- length
 	int $0x80             # Execute syscall
 
     ret
