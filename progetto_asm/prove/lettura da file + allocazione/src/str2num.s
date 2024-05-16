@@ -4,18 +4,24 @@
 #             N-1 N-2   N-3   N-4
 #
 
+
 .section .data
 
-.section .textEAX
-.type _converti, @function
+numstr:
+  .ascii "2203\n"
+
+.section .text
+  .global _converti
+
 _converti:
-  pop %esp
-  leal (%ecx), %esi
+
+  leal numstr, %esi
   movl $0, %ecx            # azzero il contatore
   movl $0, %ebx            # azzero il registro EBX
 
 
 ripeti:
+
   # movb (%esi), %al
   movb (%ecx,%esi,1), %bl
 
@@ -32,6 +38,9 @@ ripeti:
 
 
 fine:
-  # il risultato si trova in ebx
+
+  # il risultato si trova in EAX
+
+  movl $1, %eax
   movl $0, %ebx
   int $0x80

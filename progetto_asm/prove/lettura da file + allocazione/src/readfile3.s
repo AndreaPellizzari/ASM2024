@@ -1,20 +1,26 @@
 .section .data
 filename:
     .ascii "input.txt"    # Nome del file di testo da leggere
+
+# path:
+    # .ascii "/file/"
 fd:
     .int 0               # File descriptor
 
 buffer: .string ""       # Spazio per il buffer di input
 newline: .byte 10        # Valore del simbolo di nuova linea
 lines: .int 0            # Numero di linee
-temp: .int 0
-i: .int 0
+temp: .int 0             # variabile temporanea multiuso
+i: .int 0                # indice struct
 
 struct_size: .long 16     # dimensione totale della struttura (4 interi)
+struct_item_size: .long 4
 array_size: .long 10      # dimensione iniziale dell'array
-array_ptr: .long 0        # puntatore all'array di strutture
 
 .section .bss
+.align 4
+array_ptr:
+    .space 160          # Riserva 256 byte per il buffer
 
 .section .text
     .globl _start
@@ -33,58 +39,84 @@ _open:
 
 # Legge il file riga per riga
 _read_loop:
+    # lettura
     mov $3, %eax        # syscall read
     mov fd, %ebx        # File descriptor
     mov $buffer, %ecx   # Buffer di input
     mov $1, %edx        # Lunghezza massima
     int $0x80        
+
     cmp $0, %eax        # Controllo se ci sono errori o EOF
     jle _close_file     # Se ci sono errori o EOF, chiudo il file
     
     # Controllo se ho una nuova linea
     movb buffer, %al    # copio il carattere dal buffer ad AL
     cmpb newline, %al   # confronto AL con il carattere \n
-    jne _print_line     # se sono diversi stampo la linea
+    jne _save_line     # se sono diversi stampo la linea
     incw lines          # altrimenti, incremento il contatore
-    push temp
+
+    # salvo in memoria, vale per il parametro 4
+    leal array_ptr, %edi                # Carica l'indirizzo di memoria dell'array di strutture in EDI
+    movl lines, %ecx                    # Carica il numero corrente di linee lette in ECX (indice dell'array)
+    imull struct_size, %ecx            # Calcola l'offset (dimensione di ogni struttura * indice)
+    movl i, %ebx                        # Carica l'elemento dello struct
+    imull struct_item_size, %ebx       # Calcola l'elemento dello struct a cui si desidera accedere
+    addl %ebx, %ecx                     # Aggiunge all'offset iniziale
+    addl %ecx, %edi                     # Aggunge l'offeset all'indirizzo del valore in memoria da accedere
+    leal (%edi, %ecx), %edi             # Calcola l'indirizzo corrente dell'array di strutture
+    movl temp, %ebx
+    movl %ebx, (%edi)                   # Salva il valore temporaneo nella posizione corrente dell'array
+
     movl $0, temp
+    movl $0, i             # resetto la i
+
+    jmp _read_loop
 
 
-_print_line:
-
-#    mov $4, %eax        # syscall write
-#    mov $1, %ebx        # File descriptor standard output (stdout)
-#    mov $buffer, %ecx push temp  # Buffer di output
-#    int $0x80
-
+_save_line:
+    # conversione
     movb buffer, %bl
 
+    # se trova la virgola
     cmp $44, %bl
     je _virgola_trovata
-
-    mov $4, %eax        # syscall write
-    mov $1, %ebx        # File descriptor standard output (stdout)
-    mov $buffer, %ecx   # Buffer di output
-    int $0x80           # addl $4, imovl temp, (%edi)
+    movl temp, %eax
+    # oppure converto il char
+    subb $48, %bl            # converte il codice ASCII della cifra nel numero corrisp.
+    movl $10, %edx
     mulb %dl                # EBX = EBX * 10
     addl %ebx, %eax
     movl %eax, temp
-
-    // in temp abbiamo i valori senza virgola
+    call itoa
 
     jmp _read_loop      # Torna alla lettura del file
 
 _virgola_trovata:
-    movl array_ptr, %edi         # Carica l'indirizzo di memoria dell'array di strutture in EDI
-    movl lines, %ecx             # Carica il numero corrente di linee lette in ECX (indice dell'array)
-    imull $struct_size, %ecx     # Calcola l'offset (dimensione di ogni struttura * indice)
-    leal (%edi, %ecx), %edi      # Calcola l'indirizzo corrente dell'array di strutture
-    movl temp, (%edi)            # Salva il valore temporaneo nella posizione corrente dell'array
-    incw i
+    # salvo in memoria, vale per i parametri 1,2,3
+    leal array_ptr, %edi                # Carica l'indirizzo di memoria dell'array di strutture in EDI
+    movl lines, %ecx                    # Carica il numero corrente di linee lette in ECX (indice dell'array)
+    imull struct_size, %ecx            # Calcola l'offset (dimensione di ogni struttura * indice)
+    movl i, %ebx                        # Carica l'elemento dello struct
+    imull struct_item_size, %ebx       # Calcola l'elemento dello struct a cui si desidera accedere
+    addl %ebx, %ecx                     # Aggiunge all'offset iniziale
+    addl %ecx, %edi                     # Aggunge l'offeset all'indirizzo del valore in memoria da accedere
+    leal (%edi, %ecx), %edi             # Calcola l'indirizzo corrente dell'array di strutture
+    movl temp, %ebx
+    movl %ebx, (%edi)                   # Salva il valore temporaneo nella posizione corrente dell'array
 
+    incw i                              # incremento la i, infatti vorrò andare a puntare al prossimo elemento
     movl $0, temp
     
     jmp _read_loop
+
+.type concatena, @function
+concatena:
+    movl $0, i
+    movl temp, %esi
+
+    _ripeti:
+
+
 
 # Chiude il file
 _close_file:
@@ -98,24 +130,15 @@ _exit:
     int $0x80           # Interruzione del kernel
 
 _start:
-    # Calcola la dimensione totale dell'array
-    mov $struct_size, %eax       # car    movl array_ptr, iica la dimensione totale della struttura in eax
-    imul array_size, %eax        # moltiplica per il numero di strutture nell'array
-    mov %eax, %ebx               # salva il risultato in ebx
-    
-    # Alloca memoria per l'array di strutture
-    mov $0, %edi            # EDI = NULL
-    mov %ebx, %ebx          # EBX = dimensione totale dell'array
-    mov $12, %eax            # syscall brk (numero 4)
-    int $0x80               # Interruzione del kernel
-    
-    # Controlla se c'è stato un errore durante l'allocazione di memoria
-    cmp $-1, %eax
-    je _exit                # Se c'è stato un errore, esce
-    
-    mov %eax, array_ptr     # Salva il puntatore all'array
 
-    jmp _open          # Chiama la funzione per aprire il file
+    # prendo il parametro il parametro del file di lettura:
+#    popl %ecx
+#    popl %ecx
+#    popl %ecx
+#    movl %ecx, temp
+#    call concatena
+
+    jmp _open               # Chiama la funzione per aprire il file
 
     # Fine programma
     jmp _exit
