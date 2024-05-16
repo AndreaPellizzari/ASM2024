@@ -1,3 +1,7 @@
+# funzione che riceve in input un parametro (in %ECX) e retistuisce il parametro in stringa con la sua 
+# dimensione
+# in ECX --> indirizzo della stringa del parametro
+# IN EDX --> dimensione della stringa
 .section .data
 
 new_line_char:
@@ -11,15 +15,12 @@ _saveparam:
     # il parametro lo ho già in %ecx
 
 handle_par:
-	testl %ecx, %ecx	# controlla se EAX e' 0 (NULL)
+	testl %ecx, %ecx	# controlla se ECX e' 0 (NULL)
 	jz fine
 	call print_par		# stampa il parametro
-	jmp handle_par 		# ciclo nuovamente 
 
 fine:
-	movl $1, %eax
-	movl $0, %ebx
-	int $0x80
+	ret
 
 
 # --------------------------------------
@@ -32,15 +33,9 @@ print_par:
 									# l'indirizzo è già contenuto in ecx
 									# la lunghezza della stringa è già contenuta in edx
 	int $0x80
-
-	movl $4, %eax
-	movl $1, %ebx
-	leal new_line_char, %ecx
-	movl $1, %edx
-	int $0x80
-	
 	ret
 
+    # restituisce in %ecx la stringa e in %edx la lunghezza!
 
 # --------------------------------------
 .type count_char, @function			# conta da quanti caratteri è composta la stringa del parametro
@@ -57,4 +52,3 @@ iterate:
 
 end_count:
 	ret
-    

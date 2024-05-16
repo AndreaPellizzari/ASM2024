@@ -1,9 +1,8 @@
 .section .data
-filename:
-    .ascii "input.txt"    # Nome del file di testo da leggere
+filename: .string     # Nome del file di testo da leggere
 
-# path:
-    # .ascii "/file/"
+path: .string "/Ordini/"
+path_input: .space 35
 fd:
     .int 0               # File descriptor
 
@@ -28,7 +27,7 @@ array_ptr:
 # Apre il file
 _open:
     mov $5, %eax        # syscall open
-    mov $filename, %ebx # Nome del file
+    mov filename, %ebx # Nome del file
     mov $0, %ecx        # Modalità di apertura (O_RDONLY)
     int $0x80           # Interruzione del kernel
 
@@ -109,14 +108,6 @@ _virgola_trovata:
     
     jmp _read_loop
 
-.type concatena, @function
-concatena:
-    movl $0, i
-    movl temp, %esi
-
-    _ripeti:
-
-
 
 # Chiude il file
 _close_file:
@@ -131,14 +122,86 @@ _exit:
 
 _start:
 
-    # prendo il parametro il parametro del file di lettura:
-#    popl %ecx
-#    popl %ecx
-#    popl %ecx
-#    movl %ecx, temp
-#    call concatena
+# Salvo parametro numero 1
+_parametro_1:               # prendo il parametro il parametro del file di lettura:
+    popl %ecx
+    popl %ecx
+    # salvo il primo parametro
+    popl %ecx
+    call _saveparam         # in ecx ho il risultato e edx la lunghezza
+    movl %ecx, filename
 
+    # concatena il file con la path
+    # call concatena
+
+    # conta numero righe file
+    call _countline
+
+    # calcolo la memoria necessaria da allocare dinamicamente (EAX RISULTATO)
+    movl lines, %eax
+    movl %eax, array_size
+    imul struct_size, %ebx
+
+    # allocamento con syscall brk
+    movl $45, %eax
+    # in ebx ho la quantità di memoria
+    movl %eax, array_ptr
+
+    # lettura da file + salva nella memoria dinamica
     jmp _open               # Chiama la funzione per aprire il file
+
+    
 
     # Fine programma
     jmp _exit
+
+
+# ---------------------------------------------------
+# funzione di concatenazione tra path e filename (input)
+.type concatena, @function
+concatena:
+    movl $path, %esi
+    movl $path_input, %edi
+
+    _path:
+    
+
+    _filename:
+
+# ---------------------------------
+# restituisce quante righe ci sono dentro il file di input
+.type _countline, @function
+_countline:
+_opencountfile:
+    mov $5, %eax        # syscall open
+    mov filename, %ebx # Nome del file
+    mov $0, %ecx        # Modalità di apertura (O_RDONLY)
+    int $0x80           # Interruzione del kernel
+
+    # Se c'è un errore, esce
+    cmp $0, %eax
+    jl _exit
+    mov %eax, fd      # Salva il file descriptor in ebx
+
+readcount_loop:
+    mov $3, %eax        # syscall read
+    mov fd, %ebx        # File descriptor
+    mov $buffer, %ecx   # Buffer di input
+    mov $1, %edx        # Lunghezza massima
+    int $0x80        
+
+    cmp $0, %eax        # Controllo se ci sono errori o EOF
+    jle close_file     # Se ci sono errori o EOF, chiudo il file
+    
+    # Controllo se ho una nuova linea
+    movb buffer, %al    # copio il carattere dal buffer ad AL
+    cmpb newline, %al   # confronto AL con il carattere \n
+    jne readcount_loop     # se sono diversi vado aumento il parametro
+    incw lines          # altrimenti, incremento il contatore
+    jmp readcount_loop
+
+close_file:
+    mov $6, %eax        # syscall close
+    mov %ebx, %ecx      # File descriptor
+    int $0x80           # Interruzione del kernel
+    ret
