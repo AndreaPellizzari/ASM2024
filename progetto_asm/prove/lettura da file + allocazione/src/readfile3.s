@@ -1,8 +1,8 @@
 .section .data
-filename: .string     # Nome del file di testo da leggere
+filename: .string ""    # Nome del file di testo da leggere
 
-path: .string "/Ordini/"
-path_input: .space 35
+path: .string "...../Ordini/"
+
 fd:
     .int 0               # File descriptor
 
@@ -11,6 +11,7 @@ newline: .byte 10        # Valore del simbolo di nuova linea
 lines: .int 0            # Numero di linee
 temp: .int 0             # variabile temporanea multiuso
 i: .int 0                # indice struct
+array_ptr: .int 0
 
 struct_size: .long 16     # dimensione totale della struttura (4 interi)
 struct_item_size: .long 4
@@ -18,18 +19,18 @@ array_size: .long 10      # dimensione iniziale dell'array
 
 .section .bss
 .align 4
-array_ptr:
-    .space 160          # Riserva 256 byte per il buffer
+path_input: .space 35
+path_output: .space 35
 
 .section .text
     .globl _start
 
 # Apre il file
 _open:
-    mov $5, %eax        # syscall open
-    mov filename, %ebx # Nome del file
-    mov $0, %ecx        # Modalità di apertura (O_RDONLY)
-    int $0x80           # Interruzione del kernel
+    mov $5, %eax                    # syscall open
+    mov path_input, %ebx           # Nome del file
+    mov $0, %ecx                    # Modalità di apertura (O_RDONLY)
+    int $0x80                       # Interruzione del kernelp
 
     # Se c'è un errore, esce
     cmp $0, %eax
@@ -132,7 +133,7 @@ _parametro_1:               # prendo il parametro il parametro del file di lettu
     movl %ecx, filename
 
     # concatena il file con la path
-    # call concatena
+    call concatena_input
 
     # conta numero righe file
     call _countline
@@ -150,7 +151,6 @@ _parametro_1:               # prendo il parametro il parametro del file di lettu
     # lettura da file + salva nella memoria dinamica
     jmp _open               # Chiama la funzione per aprire il file
 
-    
 
     # Fine programma
     jmp _exit
@@ -158,15 +158,42 @@ _parametro_1:               # prendo il parametro il parametro del file di lettu
 
 # ---------------------------------------------------
 # funzione di concatenazione tra path e filename (input)
-.type concatena, @function
-concatena:
-    movl $path, %esi
-    movl $path_input, %edi
+.type concatena_input, @function
+concatena_input:
+    # Copia 'path' in 'path_input'
+    movl $path, %esi        # Puntatore alla stringa 'path'
+    movl $path_input, %edi  # Puntatore alla destinazione 'path_input'
+    add $3, %esi
 
-    _path:
-    
+copy_path:
+    movb (%esi), %al        # Carica un byte da (%esi) a %al
+    movb %al, (%edi)        # Memorizza il byte da %al a (%edi)
+    inc %esi                # Incrementa %esi per il prossimo byte
+    inc %edi                # Incrementa %edi per il prossimo byte
+    testb %al, %al          # Controlla se %al è zero (terminatore di stringa)
+    jnz copy_path           # Se non è il terminatore, continua a copiare
 
-    _filename:
+    # Decrementa %edi per sovrascrivere il terminatore nullo
+    dec %edi
+
+    # Copia 'filename' in 'path_input' dopo 'path'
+    movl filename, %esi    # Puntatore alla stringa 'filename'
+
+copy_filename:
+    movb (%esi), %al        # Carica un byte da (%esi) a %al
+    movb %al, (%edi)        # Memorizza il byte in %al a (%edi)
+    inc %esi                # Incrementa %esi per il prossimo byte
+    inc %edi                # Incrementa %edi per il prossimo byte
+    testb %al, %al          # Controlla se %al è zero (terminatore di stringa)
+    jnz copy_filename       # Se non è il terminatore, continua a copiare
+
+    movl $4, %eax           # Syscall numero per sys_write
+    movl $1, %ebx           # File descriptor 1 (stdout)
+    movl $path_input, %ecx  # Puntatore alla stringa da stampare
+    movl $35, %edx          # Lunghezza massima della stringa
+    int $0x80               # Interruzione del kernel
+
+    ret
 
 # ---------------------------------
 # restituisce quante righe ci sono dentro il file di input
