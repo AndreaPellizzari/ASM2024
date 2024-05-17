@@ -2,28 +2,84 @@
 
 path: .string "./Ordini/"
 
-fd:
-    .long 0               # File descriptor
+fd: .long 0                                                             # File descriptor
 
-buffer: .string ""       # Spazio per il buffer di input
-newline: .byte 10        # Valore del simbolo di nuova linea
-lines: .long 0            # Numero di linee
-temp: .long 0             # variabile temporanea multiuso
-i: .long 0                # indice struct
-array_ptr: .long 0
+buffer: .string ""                                                      # Spazio per il buffer di input
+newline: .byte 10                                                       # Valore del simbolo di nuova linea
+lines: .long 0                                                          # Numero di linee
+temp: .long 0                                                           # variabile temporanea multiuso
+i: .long 0                                                              # indice struct
 
-struct_size: .long 16     # dimensione totale della struttura (4 interi)
-struct_item_size: .long 4
-array_size: .long 10      # dimensione iniziale dell'array
+array_ptr: .long 0                                                      # puntatore alla struttura di memoria
+struct_size: .long 16                                                   # dimensione totale della struttura (4 interi)
+struct_item_size: .long 4                                               # dimensione della singola cella di array
+array_size: .long 10                                                    # dimensione iniziale dell'array
 
 .section .bss
 .align 4
-path_input: .space 35
-path_output: .space 35
-filename: .space 20    # Nome del file di testo da leggere
+path_input: .space 35                                                   # path del file di input
+path_output: .space 35                                                  # path del file di output
+filename: .space 20                                                     # nome del file preso da parametro
 
 .section .text
     .globl _start
+
+_start:
+
+# Salvo parametro numero 1
+_parametro_1:               # prendo il parametro il parametro del file di lettura:
+    popl %ecx
+    popl %ecx
+    # salvo il primo parametro
+    popl %ecx
+    call _saveparam         # in ecx ho il risultato e edx la lunghezza
+    movl %ecx, filename
+
+    # concatena il file con la path
+    call concatena_input
+
+    # conta numero righe file
+    call _countline
+    movl $4, %eax           # Syscall numero per sys_write
+    movl $1, %ebx           # File descriptor 1 (stdout)
+    movl lines, %ecx  # Puntatore alla stringa da stampare
+    movl $35, %edx          # Lunghezza massima della stringa
+    int $0x80               # Interruzione del kernel
+    
+
+    # calcolo la memoria necessaria da allocare dinamicamente (EAX RISULTATO)
+    movl lines, %eax
+    movl %eax, array_size
+    imul struct_size, %ebx
+
+    # Ottieni l'attuale break
+    mov $45, %eax          # Syscall 45: brk
+    xor %ebx, %ebx         # Passa 0 per ottenere l'attuale break
+    int $0x80              # Effettua la syscall
+    mov %eax, %esi         # Salva l'attuale break in %esi
+
+    # Imposta il nuovo break
+    add %ebx, %esi         # Aggiungi la dimensione della memoria da allocare al break attuale
+    mov $45, %eax          # Syscall 45: brk
+    mov %esi, %ebx         # Passa il nuovo break come argomento
+    int $0x80              # Effettua la syscall
+
+    # Controlla se la syscall ha successo
+    cmp %esi, %eax
+    jne _exit           # Se fallisce, esci con errore
+
+    # Controlla se la syscall ha successo
+    cmp %esi, %eax
+    jne _exit        # Se fallisce, esci con errore
+
+    movl $0, lines
+    # lettura da file + salva nella memoria dinamica
+    jmp _open               # Chiama la funzione per aprire il file
+
+
+    # Fine programma
+    jmp _exit
+
 
 # Apre il file
 _open:
@@ -120,47 +176,6 @@ _exit:
     movl $1, %eax        # syscall exit
     xor %ebx, %ebx      # Codice di uscita 0
     int $0x80           # Interruzione del kernel
-
-_start:
-
-# Salvo parametro numero 1
-_parametro_1:               # prendo il parametro il parametro del file di lettura:
-    popl %ecx
-    popl %ecx
-    # salvo il primo parametro
-    popl %ecx
-    call _saveparam         # in ecx ho il risultato e edx la lunghezza
-    movl %ecx, filename
-
-    # concatena il file con la path
-    call concatena_input
-
-    # conta numero righe file
-    call _countline
-    movl $4, %eax           # Syscall numero per sys_write
-    movl $1, %ebx           # File descriptor 1 (stdout)
-    movl lines, %ecx  # Puntatore alla stringa da stampare
-    movl $35, %edx          # Lunghezza massima della stringa
-    int $0x80               # Interruzione del kernel
-    
-
-    # calcolo la memoria necessaria da allocare dinamicamente (EAX RISULTATO)
-    movl lines, %eax
-    movl %eax, array_size
-    imul struct_size, %ebx
-
-    # allocamento con syscall brk
-    movl $45, %eax
-    # in ebx ho la quantità di memoria
-    movl %eax, array_ptr
-
-    movl $0, lines
-    # lettura da file + salva nella memoria dinamica
-    jmp _open               # Chiama la funzione per aprire il file
-
-
-    # Fine programma
-    jmp _exit
 
 
 # ---------------------------------------------------

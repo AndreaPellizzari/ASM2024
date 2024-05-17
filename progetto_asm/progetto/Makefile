@@ -4,8 +4,8 @@ LD_FLAGS = -m elf_i386
 
 all: bin/pianificatore
 
-bin/pianificatore: obj/main.o obj/EDF.o obj/HPF.o obj/itoa.o
-	ld $(LD_FLAGS) obj/main.o obj/EDF.o obj/HPF.o obj/itoa.o -o bin/pianificatore
+bin/pianificatore: obj/main.o obj/EDF.o obj/HPF.o obj/itoa.o obj/saveparam.o
+	ld $(LD_FLAGS) obj/main.o obj/EDF.o obj/HPF.o obj/itoa.o obj/saveparam.o -o bin/pianificatore
 #	ld $(LD_FLAGS) obj/main.o -o bin/eseguibile
 
 obj/main.o: src/main.s
@@ -19,6 +19,9 @@ obj/HPF.o: src/HPF.s
 
 obj/itoa.o: src/itoa.s
 	as $(AS_FLAGS) $(DEBUG) src/itoa.s -o obj/itoa.o
+
+obj/saveparam.o: src/saveparam.s
+	as $(AS_FLAGS) $(DEBUG) src/saveparam.s -o obj/saveparam.o
 
 #clean:
 #	rm -f obj/*.o bin/itoa

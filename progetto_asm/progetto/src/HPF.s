@@ -1,6 +1,6 @@
 .section .data
 
-scelta3: .ascii "Hai scelto l'algoritmo HPF:\n\n"
+scelta3: .ascii "\n✅ Hai scelto l'algoritmo HPF ✅\n\n"
 scelta3lenght: .long . - scelta3
 
 .section .text

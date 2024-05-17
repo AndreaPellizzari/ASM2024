@@ -1,6 +1,6 @@
 .section .data
 
-scelta2: .ascii "Hai scelto l'algoritmo EDF:\n\n"
+scelta2: .ascii "\n✅ Hai scelto l'algoritmo EDF ✅\n\n"
 scelta2lenght: .long . - scelta2
 
 .section .text
