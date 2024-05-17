@@ -2,10 +2,10 @@ AS_FLAGS = --32
 DEBUG = -gstabs
 LD_FLAGS = -m elf_i386
 
-all: bin/eseguibile
+all: bin/pianificatore
 
-bin/eseguibile: obj/main.o obj/EDF.o obj/HPF.o obj/itoa.o
-	ld $(LD_FLAGS) obj/main.o obj/EDF.o obj/HPF.o obj/itoa.o -o bin/eseguibile
+bin/pianificatore: obj/main.o obj/EDF.o obj/HPF.o obj/itoa.o
+	ld $(LD_FLAGS) obj/main.o obj/EDF.o obj/HPF.o obj/itoa.o -o bin/pianificatore
 #	ld $(LD_FLAGS) obj/main.o -o bin/eseguibile
 
 obj/main.o: src/main.s

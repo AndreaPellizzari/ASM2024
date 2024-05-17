@@ -1,17 +1,16 @@
 .section .data
-filename: .string ""    # Nome del file di testo da leggere
 
-path: .string "...../Ordini/"
+path: .string "./Ordini/"
 
 fd:
-    .int 0               # File descriptor
+    .long 0               # File descriptor
 
 buffer: .string ""       # Spazio per il buffer di input
 newline: .byte 10        # Valore del simbolo di nuova linea
-lines: .int 0            # Numero di linee
-temp: .int 0             # variabile temporanea multiuso
-i: .int 0                # indice struct
-array_ptr: .int 0
+lines: .long 0            # Numero di linee
+temp: .long 0             # variabile temporanea multiuso
+i: .long 0                # indice struct
+array_ptr: .long 0
 
 struct_size: .long 16     # dimensione totale della struttura (4 interi)
 struct_item_size: .long 4
@@ -21,32 +20,33 @@ array_size: .long 10      # dimensione iniziale dell'array
 .align 4
 path_input: .space 35
 path_output: .space 35
+filename: .space 20    # Nome del file di testo da leggere
 
 .section .text
     .globl _start
 
 # Apre il file
 _open:
-    mov $5, %eax                    # syscall open
-    mov path_input, %ebx           # Nome del file
-    mov $0, %ecx                    # Modalità di apertura (O_RDONLY)
+    movl $5, %eax                    # syscall open
+    movl $path_input, %ebx           # Nome del file
+    movl $0, %ecx                    # Modalità di apertura (O_RDONLY)
     int $0x80                       # Interruzione del kernelp
 
     # Se c'è un errore, esce
-    cmp $0, %eax
+    cmpl $0, %eax
     jl _exit
-    mov %eax, fd      # Salva il file descriptor in ebx
+    movl %eax, fd      # Salva il file descriptor in ebx
 
 # Legge il file riga per riga
 _read_loop:
     # lettura
-    mov $3, %eax        # syscall read
-    mov fd, %ebx        # File descriptor
-    mov $buffer, %ecx   # Buffer di input
-    mov $1, %edx        # Lunghezza massima
+    movl $3, %eax        # syscall read
+    movl fd, %ebx        # File descriptor
+    movl $buffer, %ecx   # Buffer di input
+    movl $1, %edx        # Lunghezza massima
     int $0x80        
 
-    cmp $0, %eax        # Controllo se ci sono errori o EOF
+    cmpl $0, %eax        # Controllo se ci sono errori o EOF
     jle _close_file     # Se ci sono errori o EOF, chiudo il file
     
     # Controllo se ho una nuova linea
@@ -112,12 +112,12 @@ _virgola_trovata:
 
 # Chiude il file
 _close_file:
-    mov $6, %eax        # syscall close
-    mov %ebx, %ecx      # File descriptor
+    movl $6, %eax        # syscall close
+    movl %ebx, %ecx      # File descriptor
     int $0x80           # Interruzione del kernel
 
 _exit:
-    mov $1, %eax        # syscall exit
+    movl $1, %eax        # syscall exit
     xor %ebx, %ebx      # Codice di uscita 0
     int $0x80           # Interruzione del kernel
 
@@ -137,6 +137,12 @@ _parametro_1:               # prendo il parametro il parametro del file di lettu
 
     # conta numero righe file
     call _countline
+    movl $4, %eax           # Syscall numero per sys_write
+    movl $1, %ebx           # File descriptor 1 (stdout)
+    movl lines, %ecx  # Puntatore alla stringa da stampare
+    movl $35, %edx          # Lunghezza massima della stringa
+    int $0x80               # Interruzione del kernel
+    
 
     # calcolo la memoria necessaria da allocare dinamicamente (EAX RISULTATO)
     movl lines, %eax
@@ -148,6 +154,7 @@ _parametro_1:               # prendo il parametro il parametro del file di lettu
     # in ebx ho la quantità di memoria
     movl %eax, array_ptr
 
+    movl $0, lines
     # lettura da file + salva nella memoria dinamica
     jmp _open               # Chiama la funzione per aprire il file
 
@@ -163,7 +170,6 @@ concatena_input:
     # Copia 'path' in 'path_input'
     movl $path, %esi        # Puntatore alla stringa 'path'
     movl $path_input, %edi  # Puntatore alla destinazione 'path_input'
-    add $3, %esi
 
 copy_path:
     movb (%esi), %al        # Carica un byte da (%esi) a %al
@@ -200,24 +206,24 @@ copy_filename:
 .type _countline, @function
 _countline:
 _opencountfile:
-    mov $5, %eax        # syscall open
-    mov filename, %ebx # Nome del file
-    mov $0, %ecx        # Modalità di apertura (O_RDONLY)
+    movl $5, %eax        # syscall open
+    movl $path_input, %ebx # Nome del file
+    movl $0, %ecx        # Modalità di apertura (O_RDONLY)
     int $0x80           # Interruzione del kernel
 
     # Se c'è un errore, esce
-    cmp $0, %eax
+    cmpl $0, %eax
     jl _exit
-    mov %eax, fd      # Salva il file descriptor in ebx
+    movl %eax, fd      # Salva il file descriptor in ebx
 
 readcount_loop:
-    mov $3, %eax        # syscall read
-    mov fd, %ebx        # File descriptor
-    mov $buffer, %ecx   # Buffer di input
-    mov $1, %edx        # Lunghezza massima
+    movl $3, %eax        # syscall read
+    movl fd, %ebx        # File descriptor
+    movl $buffer, %ecx   # Buffer di input
+    movl $1, %edx        # Lunghezza massima
     int $0x80        
 
-    cmp $0, %eax        # Controllo se ci sono errori o EOF
+    cmpl $0, %eax        # Controllo se ci sono errori o EOF
     jle close_file     # Se ci sono errori o EOF, chiudo il file
     
     # Controllo se ho una nuova linea
@@ -228,7 +234,7 @@ readcount_loop:
     jmp readcount_loop
 
 close_file:
-    mov $6, %eax        # syscall close
-    mov %ebx, %ecx      # File descriptor
+    movl $6, %eax        # syscall close
+    movl %ebx, %ecx      # File descriptor
     int $0x80           # Interruzione del kernel
     ret
