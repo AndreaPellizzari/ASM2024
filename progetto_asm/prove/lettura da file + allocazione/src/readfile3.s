@@ -47,7 +47,7 @@ _parametro_1:               # prendo il parametro il parametro del file di lettu
     int $0x80               # Interruzione del kernel
     
 
-    # calcolo la memoria necessaria da allocare dinamicamente (EAX RISULTATO)
+    # calcolo la memoria necessaria da allocare dinamicamente (EBX RISULTATO)
     movl lines, %eax
     movl %eax, array_size
     imul struct_size, %ebx
