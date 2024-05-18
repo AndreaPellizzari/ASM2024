@@ -10,7 +10,7 @@ i: .long 0                                                              # indice
 array_ptr: .long 0                                                      # puntatore alla struttura di memoria
 struct_size: .long 16                                                   # dimensione totale della struttura (4 interi)
 struct_item_size: .long 4                                               # dimensione della singola cella di array
-array_size: .long 10                                                    # dimensione iniziale dell'array
+array_size: .long 0                                                     # dimensione iniziale dell'array
 
 .section .bss
     path_input: .space 35                                                   # path del file di input
@@ -28,30 +28,29 @@ _save_data:
     # conto quante linee ci sono all'interno del file di input
     call _countline
 
-    movl lines, %eax
-    call itoa
-
     # alloco la giusta quantità di memoria nell'heap
     # calcolo la memoria necessaria da allocare dinamicamente (EBX RISULTATO)
     movl lines, %eax
+    imul struct_size, %eax
     movl %eax, array_size
-    imul struct_size, %ebx
 
-    # Prendo l'attuale ultimo valore
-    mov $45, %eax          # Syscall 45: brk
-    xor %ebx, %ebx         # Passa 0 per ottenere l'attuale break
-    int $0x80              # Effettua la syscall
-    mov %eax, %esi         # Salva l'attuale break in %esi
+    # Ottieni l'attuale break
+    movl $45, %eax                         # Syscall 45: brk
+    xorl %ebx, %ebx                        # Passa 0 per ottenere l'attuale break
+    int $0x80                              # Effettua la syscall
+    movl %eax, %esi                        # Salva l'attuale break in %esi
 
-    # Imposta il nuovo ultimo
-    add %ebx, %esi         # Aggiungi la dimensione della memoria da allocare al break attuale
-    mov $45, %eax          # Syscall 45: brk
-    mov %esi, %ebx         # Passa il nuovo break come argomento
-    int $0x80              # Effettua la syscall
+    # Imposta il nuovo break
+    addl array_size, %esi                  # Aggiungi la dimensione della memoria da allocare al break attuale
+    movl $45, %eax                         # Syscall 45: brk
+    movl %esi, %ebx                        # Passa il nuovo break
+    int $0x80                              # Effettua la syscall
 
-    # Controlla se la syscall ha successo
-    cmp %esi, %eax          # controllo se il valore richieste e quello ottenuto sono uguali
-    jne _exit_error               # Se fallisce, esci con errore
+    testl %eax, %eax                       # Controlla se il valore richiesto e quello ottenuto sono uguali
+    jl _exit_error                         # Se fallisce, esci con errore
+
+    mov %eax, array_ptr
+    call itoa
 
 
     movl $0, lines
@@ -83,20 +82,21 @@ _read_loop:
     movb buffer, %al    # copio il carattere dal buffer ad AL
     cmpb newline, %al   # confronto AL con il carattere \n
     jne _save_line     # se sono diversi stampo la linea
-    incw lines          # altrimenti, incremento il contatore
 
     # salvo in memoria, vale per il parametro 4
-    leal array_ptr, %edi                # Carica l'indirizzo di memoria dell'array di strutture in EDI
+    movl array_ptr, %edi                # Carica l'indirizzo di memoria dell'array di strutture in EDI
     movl lines, %ecx                    # Carica il numero corrente di linee lette in ECX (indice dell'array)
-    imull struct_size, %ecx            # Calcola l'offset (dimensione di ogni struttura * indice)
+    imull struct_size, %ecx            # Calcola l'offset (dimensione di ogni struttura * numero righe)
     movl i, %ebx                        # Carica l'elemento dello struct
     imull struct_item_size, %ebx       # Calcola l'elemento dello struct a cui si desidera accedere
     addl %ebx, %ecx                     # Aggiunge all'offset iniziale
     addl %ecx, %edi                     # Aggunge l'offeset all'indirizzo del valore in memoria da accedere
-    leal (%edi, %ecx), %edi             # Calcola l'indirizzo corrente dell'array di strutture
     movl temp, %ebx
-    movl %ebx, (%edi)                   # Salva il valore temporaneo nella posizione corrente dell'array
+    movl %ebx, (%edi)
+    movl (%edi), %eax
+    call itoa
 
+    incw lines          # altrimenti, incremento il contatore
     movl $0, temp
     movl $0, i             # resetto la i
 
@@ -123,16 +123,17 @@ _save_line:
 
 _virgola_trovata:
     # salvo in memoria, vale per i parametri 1,2,3
-    leal array_ptr, %edi                # Carica l'indirizzo di memoria dell'array di strutture in EDI
+    movl array_ptr, %edi                # Carica l'indirizzo di memoria dell'array di strutture in EDI
     movl lines, %ecx                    # Carica il numero corrente di linee lette in ECX (indice dell'array)
-    imull struct_size, %ecx            # Calcola l'offset (dimensione di ogni struttura * indice)
+    imull struct_size, %ecx            # Calcola l'offset (dimensione di ogni struttura * numero righe)
     movl i, %ebx                        # Carica l'elemento dello struct
     imull struct_item_size, %ebx       # Calcola l'elemento dello struct a cui si desidera accedere
     addl %ebx, %ecx                     # Aggiunge all'offset iniziale
     addl %ecx, %edi                     # Aggunge l'offeset all'indirizzo del valore in memoria da accedere
-    leal (%edi, %ecx), %edi             # Calcola l'indirizzo corrente dell'array di strutture
     movl temp, %ebx
-    movl %ebx, (%edi)                   # Salva il valore temporaneo nella posizione corrente dell'array
+    movl %ebx, (%edi)
+    movl (%edi), %eax
+    call itoa
 
     incw i                              # incremento la i, infatti vorrò andare a puntare al prossimo elemento
     movl $0, temp
@@ -146,9 +147,9 @@ _close_file:
     movl %ebx, %ecx      # File descriptor
     int $0x80           # Interruzione del kernel
 
-
     # sposto il puntatore array_ptr in eax
     movl array_ptr, %eax
+    movl array_size, %ebx
     ret
 
 _exit:

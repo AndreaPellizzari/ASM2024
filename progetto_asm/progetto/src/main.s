@@ -9,6 +9,8 @@
     sceltascrittura: .int 0
 
     array_ptr: .long 0
+    array_size: .long 0
+    i: .long 0
 .section .bss
     scelta: .space 2 
     filename: .space 20
@@ -40,8 +42,31 @@ _save_param:
 salva_dati:
     movl $path_input, %eax                                                  # Mi passo il l'indirizzo di path_input
     call _save_data                                                         # salvataggio dei dati in uno spazio di memoria dinamica, ricevo l'indirizzo in EAX
-    movl %eax, %edx                                                       # Carica il contenuto di memoria all'indirizzo puntato da eax in edx
-    movl %edx, array_ptr                                                    # Copia il contenuto di edx in array_ptr
+    movl %eax, array_ptr                                                         # Carica il contenuto di memoria all'indirizzo puntato da eax in edx
+    movl %ebx, array_size
+    call itoa
+    movl array_ptr, %edx
+    addl $8, %edx
+    movl (%edx), %eax
+    call itoa
+    movl array_size, %eax
+    call itoa
+
+    # inizializzo le variabili per la stampa
+    movl $0, i
+    movl array_ptr, %edi
+
+
+stampa_dati:
+    movl array_size, %ecx
+    cmp i, %ecx
+    jle _loop_choose_algorith
+    movl (%edi), %eax
+    call itoa
+    addl $4, %edi 
+    addl $4, i
+    jmp stampa_dati
+
 
 _loop_choose_algorith:
     # stampa a video della stringa di scelta
