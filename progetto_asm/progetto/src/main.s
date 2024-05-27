@@ -106,12 +106,19 @@ _exit:
     int $0x80
 
 _edf_algorith:
+    movl array_ptr, %eax
+    movl array_size, %ebx
+
     call edf
 
     jmp _loop_choose_algorith
 
 _hpf_algorith:
+    movl array_ptr, %eax
+    movl array_size, %ebx
+
     call hpf
+    
     jmp _loop_choose_algorith
 
 
