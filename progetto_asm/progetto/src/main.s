@@ -20,7 +20,6 @@
     scelta: .space 2 
     filename: .space 20
     path_input: .space 35                                                   # path del file di input
-    path_output: .space 35                                                  # path del file di output   
 
 .section .text
     .global _start
@@ -28,7 +27,7 @@
 _save_second_param:
     movl $1, sceltascrittura                                                # imposto che vorrò scrivere su file
     movl %ecx, filename
-    call concatena_output
+
     jmp salva_dati
 
 _start:
@@ -85,7 +84,7 @@ _loop_choose_algorith:
     movl $3, %eax                                                           # syscall number for sys_read
     movl $0, %ebx                                                           # file descriptor 0 (stdin)
     movl $scelta, %ecx                                                      # buffer per salvare l'input
-    movl $2, %edx                                                           # massimo numero di byte da leggere
+    movl $2, %edx                                                             # massimo numero di byte da leggere
     int $0x80                                                               # syscall
 
     movb scelta, %bl
@@ -128,11 +127,11 @@ _hpf_algorith:
     cmpl $1, sceltascrittura
     jne _loop_choose_algorith
 
-    # APERTURA DEL FILE IN MODALITÀ DI SCRITTURA
+    # APERTURA DEL FILE IN MODALITÀ DI SCRITTURA, LO APRIAMO UNA VOLTA SOLA E LO CHIUDIAMO 
     movl $5, %eax                        # syscall open
-    movl $path_output, %ebx               # Nome del file
-    movl $0x201, %ecx                    # Modalità di apertura (O_CREAT | O_WRONLY)
-    # movl $0x1A4, %edx                    # Permessi del file (0644 in ottale)
+    movl (filename), %ebx               # Nome del file
+    movl $0x242, %ecx                    # Modalità di apertura (O_CREAT | O_WRONLY)
+    movl $0x1A4, %edx                    # Permessi del file (0644 in ottale)
     int $0x80                            # Interruzione del kernel
 
     # Se c'è un errore, esce
@@ -140,12 +139,16 @@ _hpf_algorith:
     jle _exit
     movl %eax, fd1                       # Salva il file descriptor in ebx
 
+    # QUI ANDRA INSERITO IL CICLO DI STAMPA DEL FILE
+
     movl $4, %eax                       # syscall wrtie
     movl fd1, %ebx                       # File descriptor
     movl $stringwrite, %ecx             # Buffer di input
     movl stringwritelgth, %edx          # Lunghezza massima
     int $0x80
 
+
+    # UNA VOLTA FINITA LA STAMPA, CHIUDIAMO IL FILE
     # CHIUSURA FILE
     movl $6, %eax        # syscall close
     movl fd1, %ecx      # File descriptor
@@ -192,43 +195,3 @@ copy_filename_input:
  #   int $0x80                                                          # Interruzione del kernel
 
     ret
-
-# ---------------------------------------------------
-# funzione di concatenazione tra path e filename (output)
-.type concatena_output, @function
-concatena_output:
-    # Copia 'path' in 'path_output'
-    movl $path, %esi                                                    # Puntatore alla stringa 'path'
-    movl $path_output, %edi                                             # Puntatore alla destinazione 'path_output'
-
-copy_path_output:
-    movb (%esi), %al                                                    # Carica un byte da (%esi) a %al
-    movb %al, (%edi)                                                    # Memorizza il byte da %al a (%edi)
-    inc %esi                                                            # Incrementa %esi per il prossimo byte
-    inc %edi                                                            # Incrementa %edi per il prossimo byte
-    testb %al, %al                                                      # Controlla se %al è zero (terminatore di stringa)
-    jnz copy_path_output                                                # Se non è il terminatore, continua a copiare
-
-    # Decrementa %edi per sovrascrivere il terminatore nullo
-    dec %edi
-
-    # Copia 'filename' in 'path_output' dopo 'path'
-    movl filename, %esi                                                 # Puntatore alla stringa 'filename'
-
-copy_filename_output:
-    movb (%esi), %al                                                    # Carica un byte da (%esi) a %al
-    movb %al, (%edi)                                                    # Memorizza il byte in %al a (%edi)
-    inc %esi                                                            # Incrementa %esi per il prossimo byte
-    inc %edi                                                            # Incrementa %edi per il prossimo byte
-    testb %al, %al                                                      # Controlla se %al è zero (terminatore di stringa)
-    jnz copy_filename_output                                            # Se non è il terminatore, continua a copiare
-
-    # stampa della concatenazione
-#    movl $4, %eax                                                      # Syscall numero per sys_write
-#    movl $1, %ebx                                                      # File descriptor 1 (stdout)
-#    movl $path_output, %ecx                                            # Puntatore alla stringa da stampare
-#    movl $35, %edx                                                     # Lunghezza massima della stringa
-#    int $0x80                                                          # Interruzione del kernel
-
-    ret
-
