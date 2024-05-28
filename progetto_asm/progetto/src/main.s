@@ -5,12 +5,17 @@
     stringaerrore: .ascii "\n\n❌ Inserisci valore valido! ❌\n\n"
     stringaerrorelenght: .long . - stringaerrore
 
+    stringwrite: .ascii "stampa avvenuta con successo!"
+    stringwritelgth: .long . - stringwrite
+
     path: .string "./Ordini/"
     sceltascrittura: .int 0
 
     array_ptr: .long 0
     array_size: .long 0
     i: .long 0
+
+    fd1: .long 0                                                             # file descriptor
 .section .bss
     scelta: .space 2 
     filename: .space 20
@@ -111,16 +116,42 @@ _edf_algorith:
 
     call edf
 
-    jmp _loop_choose_algorith
-
 _hpf_algorith:
     movl array_ptr, %eax
     movl array_size, %ebx
 
     call hpf
+
+    # stampa dei parametri
+
+    # stampa su file 
+    cmpl $1, sceltascrittura
+    jne _loop_choose_algorith
+
+    # APERTURA DEL FILE IN MODALITÀ DI SCRITTURA
+    movl $5, %eax                        # syscall open
+    movl $path_output, %ebx               # Nome del file
+    movl $0x201, %ecx                    # Modalità di apertura (O_CREAT | O_WRONLY)
+    # movl $0x1A4, %edx                    # Permessi del file (0644 in ottale)
+    int $0x80                            # Interruzione del kernel
+
+    # Se c'è un errore, esce
+    cmpl $0, %eax
+    jle _exit
+    movl %eax, fd1                       # Salva il file descriptor in ebx
+
+    movl $4, %eax                       # syscall wrtie
+    movl fd1, %ebx                       # File descriptor
+    movl $stringwrite, %ecx             # Buffer di input
+    movl stringwritelgth, %edx          # Lunghezza massima
+    int $0x80
+
+    # CHIUSURA FILE
+    movl $6, %eax        # syscall close
+    movl fd1, %ecx      # File descriptor
+    int $0x80           # Interruzione del kernel
     
     jmp _loop_choose_algorith
-
 
 
 # ---------------------------------------------------

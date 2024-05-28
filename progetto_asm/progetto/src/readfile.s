@@ -64,6 +64,7 @@ _open:
     # Se c'è un errore, esce
     cmpl $0, %eax
     jl _exit
+
     movl %eax, fd      # Salva il file descriptor in ebx
 
 # Legge il file riga per riga
@@ -144,7 +145,7 @@ _virgola_trovata:
 # Chiude il file
 _close_file:
     movl $6, %eax        # syscall close
-    movl %ebx, %ecx      # File descriptor
+    movl fd, %ecx      # File descriptor
     int $0x80           # Interruzione del kernel
 
     # sposto il puntatore array_ptr in eax

@@ -205,3 +205,5 @@ fine:
 	movl ordinamento_e_lenght, %edx        # | <- length
 	int $0x80             # Execute syscall
 	
+	ret
+	
