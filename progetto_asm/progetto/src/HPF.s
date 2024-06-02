@@ -6,12 +6,16 @@ scelta2lenght: .long . - scelta2
 ordinamento_e: .ascii "\n✅ Ordinamento per durata effettuato ✅\n\n"
 ordinamento_e_lenght: .long . - ordinamento_e
 
+separatore2: .ascii ":"
+separatorelenght2: .long . - separatore2
+
 array_ptr: .long 0
 indice2: .long 0
 array_size: .long 0
 array_size_lenght: .long . - array_size
 
 elementi2: .long 0
+margine2: .long 0
 elemento2: .long 0
 elemento_ptr2: .long 0
 elemento_successivo2: .long 0
@@ -19,9 +23,18 @@ elemento_successivo_ptr2: .long 0
 temp3: .long 0
 temp22: .long 0
 
+durata2: .long 0
+priorita2: .long 0
+penalita2: .long 0
+
 i12: .long 0
 i22: .long 0
 target2: .long 0
+
+buffer: .space 12
+
+.section .text
+.globl _start
 
 .section .text
 	.global hpf
@@ -68,7 +81,7 @@ loop:
 
 	movl elementi2, %eax
 	cmp i12, %eax
-	jl fine
+	jl conteggio
 
 	movl i12, %eax
 	movl elementi2, %ebx
@@ -196,6 +209,92 @@ parita:
 
 	cmp %ecx, temp22
 	jge cambio_indici
+
+penalita:
+	movl durata2, %eax
+	movl margine2, %ebx
+
+	subl %ebx, %eax
+	imull priorita2, %eax     # Moltiplica il valore di %ebx per %eax, risultato in %eax
+	addl %eax, penalita2
+
+	jmp cambio
+
+conteggio:
+	movl array_ptr, %eax 
+	addl $4, %eax
+	movl %eax, elemento_ptr2
+	movl array_ptr, %ebx
+	addl $20, %ebx
+	movl %ebx, elemento_successivo_ptr2	
+	movl elemento_ptr2, %eax
+	movl elemento_successivo_ptr2, %ebx
+	movl (%eax), %ecx
+	movl (%ebx), %edx
+	movl %ecx, elemento2
+	movl %edx, elemento_successivo2
+	movl $0, %eax
+	movl %eax, i12
+	movl elemento_ptr2, %eax
+	addl $4, %eax
+	movl (%eax), %ebx
+	movl %ebx, margine2
+	movl elemento_ptr2, %eax
+	addl $8, %eax
+	movl (%eax), %ebx
+	movl %ebx, priorita2
+
+loop_conteggio:
+	movl i12, %eax
+	inc %eax
+	movl %eax, i12
+
+	movl elementi2, %eax
+	cmp i12, %eax
+	jl fine
+
+	movl durata2, %eax
+	addl elemento2, %eax
+	movl %eax, durata2
+	movl margine2, %eax
+
+	cmp durata2, %eax
+	jl penalita
+
+	#	movl elemento_ptr2, %eax
+	#	addl $16, %eax
+	#	movl %eax, %ecx
+	#	movl %ecx, %eax
+	#	movl (%eax), %ebx
+	#	addl %ebx, durata2
+
+cambio:
+	movl elemento_ptr2, %eax
+	addl $16, %eax
+	movl elemento_successivo_ptr2, %ebx
+	addl $16, %ebx
+	movl (%eax), %ecx
+	movl (%ebx), %edx
+	movl %ecx, elemento2
+	movl %edx, elemento_successivo2
+	
+	movl elemento_ptr2, %eax
+	addl $16, %eax
+	movl %eax, elemento_ptr2
+	movl elemento_successivo_ptr2, %ebx
+	addl $16, %ebx
+	movl %ebx, elemento_successivo_ptr2
+	
+	movl elemento_ptr2, %eax
+	addl $4, %eax
+	movl (%eax), %ebx
+	movl %ebx, margine2
+	movl elemento_ptr2, %eax
+	addl $8, %eax
+	movl (%eax), %ebx
+	movl %ebx, priorita2
+
+	jmp loop_conteggio
 
 fine:
 	movl $4, %eax	        # Set system call WRITE
