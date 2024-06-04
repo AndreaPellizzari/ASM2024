@@ -6,25 +6,33 @@ scelta2lenght: .long . - scelta2
 ordinamento_e: .ascii "\n✅ Ordinamento per durata effettuato ✅\n\n"
 ordinamento_e_lenght: .long . - ordinamento_e
 
-array_ptr: .long 0
+separatore: .ascii ":"
+separatorelenght: .long . - separatore
 
+sceltascrittura2: .long 0
+
+array_ptr: .long 0
 array_size: .long 0
 array_size_lenght: .long . - array_size
 
 elementi: .long 0
 elemento: .long 0
+margine: .long 0
 elemento_ptr: .long 0
 elemento_successivo: .long 0
 elemento_successivo_ptr: .long 0
 temp: .long 0
 temp2: .long 0
 
+durata: .long 0
+priorita: .long 0
+penalita1: .long 0
+
 i1: .long 0
 i2: .long 0
 target: .long 0
 
 indice: .long 0
-iterazioni: .long 0
 
 .section .text
 	.global edf
@@ -33,6 +41,8 @@ iterazioni: .long 0
 edf:
 	movl %eax, array_ptr
 	movl %ebx, array_size
+	movl %ecx, sceltascrittura2
+
 
     movl $4, %eax	        # Set system call WRITE
 	movl $1, %ebx	        # | <- standard output (video)
@@ -198,7 +208,101 @@ parita:
 	cmp %ecx, temp2
 	jle cambio_indici
 
+penalita:
+	movl durata, %eax
+	movl margine, %ebx
+
+	subl %ebx, %eax
+	imull priorita, %eax     # Moltiplica il valore di %ebx per %eax, risultato in %eax
+	addl %eax, penalita1
+
+	jmp cambio
+
+conteggio:
+	movl array_ptr, %eax 
+	addl $4, %eax
+	movl %eax, elemento_ptr
+	movl array_ptr, %ebx
+	addl $20, %ebx
+	movl %ebx, elemento_successivo_ptr	
+	movl elemento_ptr, %eax
+	movl elemento_successivo_ptr, %ebx
+	movl (%eax), %ecx
+	movl (%ebx), %edx
+	movl %ecx, elemento
+	movl %edx, elemento_successivo
+	movl $0, %eax
+	movl %eax, i1
+	movl elemento_ptr, %eax
+	addl $4, %eax
+	movl (%eax), %ebx
+	movl %ebx, margine
+	movl elemento_ptr, %eax
+	addl $8, %eax
+	movl (%eax), %ebx
+	movl %ebx, priorita
+
+loop_conteggio:
+	movl i1, %eax
+	inc %eax
+	movl %eax, i1
+
+	movl elemento_ptr, %eax
+	subl $4, %eax
+	#	Stampa ID:durata
+
+	movl elementi, %eax
+	cmp i1, %eax
+	jl fine
+
+	movl durata, %eax
+	addl elemento, %eax
+	movl %eax, durata
+	movl margine, %eax
+
+	cmp durata, %eax
+	jl penalita
+
+	#	movl elemento_ptr2, %eax
+	#	addl $16, %eax
+	#	movl %eax, %ecx
+	#	movl %ecx, %eax
+	#	movl (%eax), %ebx
+	#	addl %ebx, durata2
+
+cambio:
+	movl elemento_ptr, %eax
+	addl $16, %eax
+	movl elemento_successivo_ptr, %ebx
+	addl $16, %ebx
+	movl (%eax), %ecx
+	movl (%ebx), %edx
+	movl %ecx, elemento
+	movl %edx, elemento_successivo
+	
+	movl elemento_ptr, %eax
+	addl $16, %eax
+	movl %eax, elemento_ptr
+	movl elemento_successivo_ptr, %ebx
+	addl $16, %ebx
+	movl %ebx, elemento_successivo_ptr
+	
+	movl elemento_ptr, %eax
+	addl $4, %eax
+	movl (%eax), %ebx
+	movl %ebx, margine
+	movl elemento_ptr, %eax
+	addl $8, %eax
+	movl (%eax), %ebx
+	movl %ebx, priorita
+
+	jmp loop_conteggio
+
 fine:
+
+	#	Stampa Conclusione -> durata
+	#	Stampa Penalità -> penalita1
+
 	movl $4, %eax	        # Set system call WRITE
 	movl $1, %ebx	        # | <- standard output (video)
 	leal ordinamento_e, %ecx        # | <- destination
