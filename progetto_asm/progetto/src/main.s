@@ -1,5 +1,5 @@
 .section .data
-    stringainizio: .ascii "Scegli che algoritmo utilizzare:\n ➢ 1 = EDF;\n ➢ 2 = HDF;\n ➢ 3 = uscita\nInserisci valore: "
+    stringainizio: .ascii "\n\nScegli che algoritmo utilizzare:\n ➢ 1 = EDF;\n ➢ 2 = HDF;\n ➢ 3 = uscita\nInserisci valore: "
     stringainiziolenght: .long . - stringainizio
     
     stringaerrore: .ascii "\n\n❌ Inserisci valore valido! ❌\n\n"
@@ -16,6 +16,7 @@
     i: .long 0
 
     fd1: .long 0                                                             # file descriptor
+
 .section .bss
     scelta: .space 2 
     filename: .space 20
@@ -27,6 +28,17 @@
 _save_second_param:
     movl $1, sceltascrittura                                                # imposto che vorrò scrivere su file
     movl %ecx, filename
+    # apro il file in scrittura
+    movl $5, %eax                        # syscall open
+    movl (filename), %ebx               # Nome del file
+    movl $0x242, %ecx                    # Modalità di apertura (O_CREAT | O_WRONLY)
+    movl $0x1A4, %edx                    # Permessi del file (0644 in ottale)
+    int $0x80                            # Interruzione del kernel
+
+    # Se c'è un errore, esce
+    cmpl $0, %eax
+    jle _exit
+    movl %eax, fd1                       # Salva il file descriptor in ebx
 
     jmp salva_dati
 
@@ -83,10 +95,9 @@ _loop_choose_algorith:
     # lettura da tastiera della scelta dell'algoritmo da parte dell'utente
     movl $3, %eax                                                           # syscall number for sys_read
     movl $0, %ebx                                                           # file descriptor 0 (stdin)
-    movl $scelta, %ecx                                                      # buffer per salvare l'input
-    movl $2, %edx                                                             # massimo numero di byte da leggere
-    int $0x80                                                               # syscall
-
+    movl $scelta, %ecx                                                      # buffer per salvare l'input                                                        # syscall
+    int $0x80
+    
     movb scelta, %bl
     cmp $'1', %bl
     je _edf_algorith
@@ -105,6 +116,11 @@ _loop_choose_algorith:
     jmp _loop_choose_algorith
 
 _exit:
+    # CHIUSURA FILE
+    movl $6, %eax        # syscall close
+    movl fd1, %ecx      # File descriptor
+    int $0x80           # Interruzione del kernel
+
     movl $1, %eax                                                           # Systemcall EXIT
     movl $0, %ebx                                                           # codice di uscita 0
     int $0x80
@@ -120,41 +136,21 @@ _hpf_algorith:
     movl array_ptr, %eax
     movl array_size, %ebx
     movl sceltascrittura, %ecx
+    movl fd1, %edx
 
     call hpf
-
-    # stampa dei parametri
 
     # stampa su file 
     cmpl $1, sceltascrittura
     jne _loop_choose_algorith
 
-    # APERTURA DEL FILE IN MODALITÀ DI SCRITTURA, LO APRIAMO UNA VOLTA SOLA E LO CHIUDIAMO 
-    movl $5, %eax                        # syscall open
-    movl (filename), %ebx               # Nome del file
-    movl $0x242, %ecx                    # Modalità di apertura (O_CREAT | O_WRONLY)
-    movl $0x1A4, %edx                    # Permessi del file (0644 in ottale)
-    int $0x80                            # Interruzione del kernel
-
-    # Se c'è un errore, esce
-    cmpl $0, %eax
-    jle _exit
-    movl %eax, fd1                       # Salva il file descriptor in ebx
-
     # QUI ANDRA INSERITO IL CICLO DI STAMPA DEL FILE
 
-    movl $4, %eax                       # syscall wrtie
-    movl fd1, %ebx                       # File descriptor
-    movl $stringwrite, %ecx             # Buffer di input
-    movl stringwritelgth, %edx          # Lunghezza massima
-    int $0x80
-
-
-    # UNA VOLTA FINITA LA STAMPA, CHIUDIAMO IL FILE
-    # CHIUSURA FILE
-    movl $6, %eax        # syscall close
-    movl fd1, %ecx      # File descriptor
-    int $0x80           # Interruzione del kernel
+    # movl $4, %eax                       # syscall wrtie
+    # movl fd1, %ebx                       # File descriptor
+    # movl $stringwrite, %ecx             # Buffer di input
+    # movl stringwritelgth, %edx          # Lunghezza massima
+    # int $0x80
     
     jmp _loop_choose_algorith
 

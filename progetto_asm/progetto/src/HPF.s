@@ -1,6 +1,6 @@
 .section .data
 
-scelta2: .ascii "\n✅ Hai scelto l'algoritmo HPF ✅\n\n"
+scelta2: .ascii "Pianificazione HPF:\n"
 scelta2lenght: .long . - scelta2
 
 ordinamento_e: .ascii "\n✅ Ordinamento per durata effettuato ✅\n\n"
@@ -8,6 +8,14 @@ ordinamento_e_lenght: .long . - ordinamento_e
 
 separatore2: .ascii ":"
 separatorelenght2: .long . - separatore2
+
+conclusione: .ascii "Conclusione: "
+conclusionelenght: .long . - conclusione
+
+penalty: .ascii "\nPenalty: "
+penaltylenght: .long . - penalty
+
+caporiga: .ascii "\n"
 
 sceltascrittura3: .long 0
 
@@ -33,6 +41,8 @@ i12: .long 0
 i22: .long 0
 target2: .long 0
 
+fd1: .long 0                                                             # file descriptor write
+
 .section .text
 .globl _start
 
@@ -44,13 +54,24 @@ hpf:
 	movl %eax, array_ptr
 	movl %ebx, array_size
 	movl %ecx, sceltascrittura3
+	movl %edx, fd1
 
-    movl $4, %eax	        # Set system call WRITE
-	movl $1, %ebx	        # | <- standard output (video)
-	leal scelta2, %ecx        # | <- destination
+    movl $4, %eax	        		# Set system call WRITE
+	movl $1, %ebx	        		# | <- standard output (video)
+	leal scelta2, %ecx        		# | <- destination
 	movl scelta2lenght, %edx        # | <- length
-	int $0x80             # Execute syscall
+	int $0x80             			# Execute syscall
 
+	cmpl $1, sceltascrittura3
+	jne _continua_1
+
+	movl $4, %eax	        		# Set system call WRITE
+	movl fd1, %ebx	        		# | <- standard output (video)
+	leal scelta2, %ecx        		# | <- destination
+	movl scelta2lenght, %edx        # | <- length
+	int $0x80             			# Execute syscall
+
+_continua_1:
 	mov $0, %ecx            #   Inizializza il contatore esterno (indice2 i)
 
 	movl $4, %eax	        # Set system call WRITE
@@ -249,11 +270,47 @@ loop_conteggio:
 	movl i12, %eax
 	inc %eax
 	movl %eax, i12
+	
+	movl elementi2, %eax
+	cmpl %eax, i12
+	jg _continua_2
 
 	movl elemento_ptr2, %eax
 	subl $4, %eax
-	#	Stampa ID:durata2
+	movl (%eax), %eax
+	# stampa ID:durata2
+	# stampa a video
+	call itoa		# stampa ID
 
+	# stampa :
+	movl $4, %eax	        # Set system call WRITE
+	movl $1, %ebx	        # | <- standard output (video)
+	leal separatore2, %ecx        # | <- destination
+	movl $1, %edx        # | <- length
+	int $0x80             # Execute syscall
+	
+	movl durata2, %eax
+	movl fd1, %ebx
+
+	call itoa		# stampa durata
+
+	# stampa \n
+	movl $4, %eax	        # Set system call WRITE
+	movl $1, %ebx	        # | <- standard output (video)
+	leal caporiga, %ecx        # | <- destination
+	movl $1, %edx        # | <- length
+	int $0x80             # Execute syscall
+
+	# stampa su file
+	movl elemento_ptr2, %eax
+	subl $4, %eax
+	movl (%eax), %eax
+	movl fd1, %ebx
+
+	cmpl $1, sceltascrittura3
+	je _stampaparametrofile
+
+_continua_2:
 	movl elementi2, %eax
 	cmp i12, %eax
 	jl fine
@@ -265,7 +322,6 @@ loop_conteggio:
 
 	cmp durata2, %eax
 	jl penalita
-
 	#	movl elemento_ptr2, %eax
 	#	addl $16, %eax
 	#	movl %eax, %ecx
@@ -296,20 +352,103 @@ cambio:
 	movl %ebx, margine2
 	movl elemento_ptr2, %eax
 	addl $8, %eax
+
 	movl (%eax), %ebx
 	movl %ebx, priorita2
 
 	jmp loop_conteggio
 
 fine:
-
+	# stampa a video
 	#	Stampa Conclusione -> durata2
-	#	Stampa Penalità -> penalita2
+	movl $4, %eax	        		# Set system call WRITE
+	movl $1, %ebx	        		# | <- standard output (video)
+	leal conclusione, %ecx        	# | <- destination
+	movl conclusionelenght, %edx    # | <- length
+	int $0x80             			# Execute syscall
 
+	movl durata2, %eax
+	call itoa	
+	#	Stampa Penalità -> penalita2
+	movl $4, %eax	        		# Set system call WRITE
+	movl $1, %ebx	        		# | <- standard output (video)
+	leal penalty, %ecx        		# | <- destination
+	movl penaltylenght, %edx    	# | <- length
+	int $0x80             			# Execute syscall
+
+	movl penalita2, %eax
+	call itoa
+
+	# stampa caporiga
+	movl $4, %eax	        		# Set system call WRITE
+	movl $1, %ebx	        		# | <- standard output (video)
+	leal caporiga, %ecx        		# | <- destination
+	movl $1, %edx    	# | <- length
+	int $0x80             			# Execute syscall
+
+	# stampa su file
+	# Stampa Conclusione -> durata2
+	movl $4, %eax	        		# Set system call WRITE
+	movl fd1, %ebx	        		# | <- standard output (video)
+	leal conclusione, %ecx        	# | <- destination
+	movl conclusionelenght, %edx    # | <- length
+	int $0x80             			# Execute syscall
+
+	movl durata2, %eax
+	movl fd1, %ebx
+	call itoafile	
+	#	Stampa Penalità -> penalita2
+	movl $4, %eax	        		# Set system call WRITE
+	movl fd1, %ebx	        		# | <- standard output (video)
+	leal penalty, %ecx        		# | <- destination
+	movl penaltylenght, %edx    	# | <- length
+	int $0x80             			# Execute syscall
+
+	movl penalita2, %eax
+	movl fd1, %ebx
+	call itoafile
+	
+	# stampa caporiga
+	movl $4, %eax	        		# Set system call WRITE
+	movl fd1, %ebx	        		# | <- standard output (video)
+	leal caporiga, %ecx        		# | <- destination
+	movl $1, %edx    	# | <- length
+	int $0x80             			# Execute syscall
+
+	movl $0, penalita2
+	movl $0, durata2
+
+	ret
+
+# stampa linea 
+_stampaparametrofile:
+
+	call itoafile		# stampa ID
+
+	# stampa :
 	movl $4, %eax	        # Set system call WRITE
-	movl $1, %ebx	        # | <- standard output (video)
-	leal ordinamento_e, %ecx        # | <- destination
-	movl ordinamento_e_lenght, %edx        # | <- length
+	movl fd1, %ebx	        # | <- standard output (video)
+	leal separatore2, %ecx        # | <- destination
+	movl $1, %edx        # | <- length
 	int $0x80             # Execute syscall
 	
-	ret
+	movl durata2, %eax
+	movl fd1, %ebx
+
+	call itoafile		# stampa durata
+
+	# stampa \n
+	movl $4, %eax	        # Set system call WRITE
+	movl fd1, %ebx	        # | <- standard output (video)
+	leal caporiga, %ecx        # | <- destination
+	movl $1, %edx        # | <- length
+	int $0x80             # Execute syscall
+
+
+jmp _continua_2
+
+
+_exit:
+    movl $1, %eax                                                           # Systemcall EXIT
+    movl $1, %ebx                                                           # codice di uscita 1 (error)
+    int $0x80

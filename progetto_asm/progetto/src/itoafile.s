@@ -1,17 +1,19 @@
 .section .data
 
-car: .byte 0			# la variabile car e' dichiarata di tipo byte
+car2: .byte 0			# la variabile car e' dichiarata di tipo byte
+fd: .long 0
 
 .section .text
-	.global itoa
+	.global itoafile
 
-.type itoa, @function		# dichiarazione della funzione itoa che
+.type itoafile, @function		# dichiarazione della funzione itoa che
 							# converte un intero in una stringa
 							# il numero da convertire deve essere
 							# stato caricato nel registro %eax
 
-itoa:   
+itoafile:   
 	movl   $0, %ecx		# carica il numero 0 in %ecx
+	movl %ebx, fd
 
 
 continua_a_dividere:
@@ -65,14 +67,14 @@ stampa:
 
 	popl  %eax			# preleva l'elemento da stampare dallo stack
 
-	movb  %al, car		# memorizza nella variabile car il valore 
+	movb  %al, car2		# memorizza nella variabile car il valore 
 						# contenuto negli 8 bit meno significativi 
 						# del registro %eax; gli altri bit del 
 						# registro non ci interessano visto che una 
 						# cifra decimale e' contenuta in un solo 
 						# byte
 
-	addb  $48, car		# somma al valore car il codice ascii del 
+	addb  $48, car2		# somma al valore car il codice ascii del 
 						# carattere 0 (zero)
   
 	decl   %ebx			# decrementa di 1 il numero di cifre da 
@@ -85,8 +87,8 @@ stampa:
 						# operativo write
 
 	movl   $4, %eax
-	movl   $1, %ebx
-	leal  car, %ecx		
+	movl   fd, %ebx
+	leal  car2, %ecx		
 	mov    $1, %edx
 	int $0x80
 
@@ -103,16 +105,5 @@ stampa:
 
 
 fine_itoa:
-
-	movb  $10, car		# copia nella variabile car il codice ascii 
-						# del carattere line feed (per andare a 
-						# capo riga)
-
-	movl   $4, %eax
-	movl   $1, %ebx
-	leal  car, %ecx
-	mov    $1, %edx
-	int $0x80
-
 	ret
 
