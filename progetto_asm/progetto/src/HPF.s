@@ -1,6 +1,6 @@
 .section .data
 
-scelta2: .ascii "Pianificazione HPF:\n"
+scelta2: .ascii "\nPianificazione HPF:\n"
 scelta2lenght: .long . - scelta2
 
 ordinamento_e: .ascii "\n✅ Ordinamento per durata effettuato ✅\n\n"
