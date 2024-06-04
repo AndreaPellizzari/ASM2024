@@ -50,7 +50,6 @@ _save_data:
     jl _exit_error                         # Se fallisce, esci con errore
 
     mov %eax, array_ptr
-    call itoa
 
 
     movl $0, lines
@@ -95,7 +94,6 @@ _read_loop:
     movl temp, %ebx
     movl %ebx, (%edi)
     movl (%edi), %eax
-    call itoa
 
     incw lines          # altrimenti, incremento il contatore
     movl $0, temp
@@ -118,7 +116,7 @@ _save_line:
     mulb %dl                # EBX = EBX * 10
     addl %ebx, %eax
     movl %eax, temp
-    call itoa
+
 
     jmp _read_loop      # Torna alla lettura del file
 
@@ -134,7 +132,6 @@ _virgola_trovata:
     movl temp, %ebx
     movl %ebx, (%edi)
     movl (%edi), %eax
-    call itoa
 
     incw i                              # incremento la i, infatti vorrò andare a puntare al prossimo elemento
     movl $0, temp
@@ -144,8 +141,18 @@ _virgola_trovata:
 
 # Chiude il file
 _close_file:
-    movl $6, %eax        # syscall close
-    movl fd, %ecx      # File descriptor
+    movl array_ptr, %edi                # Carica l'indirizzo di memoria dell'array di strutture in EDI
+    movl lines, %ecx                    # Carica il numero corrente di linee lette in ECX (indice dell'array)
+    imull struct_size, %ecx            # Calcola l'offset (dimensione di ogni struttura * numero righe)
+    movl i, %ebx                        # Carica l'elemento dello struct
+    imull struct_item_size, %ebx       # Calcola l'elemento dello struct a cui si desidera accedere
+    addl %ebx, %ecx                     # Aggiunge all'offset iniziale
+    addl %ecx, %edi                     # Aggunge l'offeset all'indirizzo del valore in memoria da accedere
+    movl temp, %ebx
+    movl %ebx, (%edi)
+
+    mov $6, %eax        # syscall close
+    mov fd, %ebx        # File descriptor
     int $0x80           # Interruzione del kernel
 
     # sposto il puntatore array_ptr in eax
@@ -212,8 +219,8 @@ readcount_loop:
     jmp readcount_loop
 
 close_file:
-    movl $6, %eax        # syscall close
-    movl %ebx, %ecx      # File descriptor
+    mov $6, %eax        # syscall close
+    mov fd, %ebx        # File descriptor
     int $0x80           # Interruzione del kernel
     ret
 

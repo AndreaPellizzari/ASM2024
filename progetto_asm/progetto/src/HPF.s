@@ -15,7 +15,7 @@ conclusionelenght: .long . - conclusione
 penalty: .ascii "\nPenalty: "
 penaltylenght: .long . - penalty
 
-caporiga: .ascii "\n"
+caporiga: .ascii "\n\n"
 
 sceltascrittura3: .long 0
 
@@ -267,31 +267,28 @@ conteggio:
 	movl %ebx, priorita2
 
 loop_conteggio:
-	movl i12, %eax
-	inc %eax
-	movl %eax, i12
 	
 	movl elementi2, %eax
 	cmpl %eax, i12
 	jg _continua_2
-
+		
 	movl elemento_ptr2, %eax
 	subl $4, %eax
 	movl (%eax), %eax
-	# stampa ID:durata2
+	
+	movl fd1, %ebx	
+
 	# stampa a video
 	call itoa		# stampa ID
 
-	# stampa :
-	movl $4, %eax	        # Set system call WRITE
-	movl $1, %ebx	        # | <- standard output (video)
-	leal separatore2, %ecx        # | <- destination
-	movl $1, %edx        # | <- length
-	int $0x80             # Execute syscall
+	movl $4, %eax	        		# Set system call WRITE
+	movl $1, %ebx	        		# | <- standard output (video)
+	leal separatore2, %ecx        	# | <- destination
+	movl $1, %edx        			# | <- length
+	int $0x80             			# Execute syscall
 	
 	movl durata2, %eax
 	movl fd1, %ebx
-
 	call itoa		# stampa durata
 
 	# stampa \n
@@ -299,14 +296,14 @@ loop_conteggio:
 	movl $1, %ebx	        # | <- standard output (video)
 	leal caporiga, %ecx        # | <- destination
 	movl $1, %edx        # | <- length
-	int $0x80             # Execute syscall
-
+	int $0x80             # Execute syscall	
+		
 	# stampa su file
 	movl elemento_ptr2, %eax
 	subl $4, %eax
 	movl (%eax), %eax
 	movl fd1, %ebx
-
+	
 	cmpl $1, sceltascrittura3
 	je _stampaparametrofile
 
@@ -355,6 +352,10 @@ cambio:
 
 	movl (%eax), %ebx
 	movl %ebx, priorita2
+
+	movl i12, %eax
+	inc %eax
+	movl %eax, i12
 
 	jmp loop_conteggio
 
@@ -408,12 +409,12 @@ fine:
 	movl fd1, %ebx
 	call itoafile
 	
-	# stampa caporiga
-	movl $4, %eax	        		# Set system call WRITE
-	movl fd1, %ebx	        		# | <- standard output (video)
-	leal caporiga, %ecx        		# | <- destination
-	movl $1, %edx    	# | <- length
-	int $0x80             			# Execute syscall
+	# stampa \n
+	movl $4, %eax	        # Set system call WRITE
+	movl fd1, %ebx	        # | <- standard output (video)
+	leal caporiga, %ecx        # | <- destination
+	movl $1, %edx        # | <- length
+	int $0x80             # Execute syscall
 
 	movl $0, penalita2
 	movl $0, durata2
@@ -443,7 +444,6 @@ _stampaparametrofile:
 	leal caporiga, %ecx        # | <- destination
 	movl $1, %edx        # | <- length
 	int $0x80             # Execute syscall
-
 
 jmp _continua_2
 

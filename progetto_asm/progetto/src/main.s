@@ -60,13 +60,6 @@ salva_dati:
     call _save_data                                                         # salvataggio dei dati in uno spazio di memoria dinamica, ricevo l'indirizzo in EAX
     movl %eax, array_ptr                                                         # Carica il contenuto di memoria all'indirizzo puntato da eax in edx
     movl %ebx, array_size
-    call itoa
-    movl array_ptr, %edx
-    addl $8, %edx
-    movl (%edx), %eax
-    call itoa
-    movl array_size, %eax
-    call itoa
 
     # inizializzo le variabili per la stampa
     movl $0, i
@@ -78,7 +71,6 @@ stampa_dati:
     cmp i, %ecx
     jle _loop_choose_algorith
     movl (%edi), %eax
-    call itoa
     addl $4, %edi 
     addl $4, i
     jmp stampa_dati
