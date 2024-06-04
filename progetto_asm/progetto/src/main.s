@@ -112,12 +112,14 @@ _exit:
 _edf_algorith:
     movl array_ptr, %eax
     movl array_size, %ebx
+    movl sceltascrittura, %ecx
 
     call edf
 
 _hpf_algorith:
     movl array_ptr, %eax
     movl array_size, %ebx
+    movl sceltascrittura, %ecx
 
     call hpf
 

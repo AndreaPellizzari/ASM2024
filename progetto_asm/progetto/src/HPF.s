@@ -9,6 +9,8 @@ ordinamento_e_lenght: .long . - ordinamento_e
 separatore2: .ascii ":"
 separatorelenght2: .long . - separatore2
 
+sceltascrittura3: .long 0
+
 array_ptr: .long 0
 indice2: .long 0
 array_size: .long 0
@@ -31,8 +33,6 @@ i12: .long 0
 i22: .long 0
 target2: .long 0
 
-buffer: .space 12
-
 .section .text
 .globl _start
 
@@ -43,6 +43,7 @@ buffer: .space 12
 hpf:
 	movl %eax, array_ptr
 	movl %ebx, array_size
+	movl %ecx, sceltascrittura3
 
     movl $4, %eax	        # Set system call WRITE
 	movl $1, %ebx	        # | <- standard output (video)
@@ -249,6 +250,10 @@ loop_conteggio:
 	inc %eax
 	movl %eax, i12
 
+	movl elemento_ptr2, %eax
+	subl $4, %eax
+	#	Stampa ID:durata2
+
 	movl elementi2, %eax
 	cmp i12, %eax
 	jl fine
@@ -297,6 +302,10 @@ cambio:
 	jmp loop_conteggio
 
 fine:
+
+	#	Stampa Conclusione -> durata2
+	#	Stampa Penalità -> penalita2
+
 	movl $4, %eax	        # Set system call WRITE
 	movl $1, %ebx	        # | <- standard output (video)
 	leal ordinamento_e, %ecx        # | <- destination
