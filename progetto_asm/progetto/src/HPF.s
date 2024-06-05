@@ -74,12 +74,6 @@ hpf:
 _continua_1:
 	mov $0, %ecx            #   Inizializza il contatore esterno (indice2 i)
 
-	movl $4, %eax	        # Set system call WRITE
-	movl $1, %ebx	        # | <- standard output (video)
-	leal array_size, %ecx        # | <- destination
-	movl array_size_lenght, %edx        # | <- length
-	int $0x80             # Execute syscall
-
 ordinamento:
 	movl array_size, %eax  # Carica il valore di 'array_size' nel registro %eax
     movl %eax, elementi2    # Copia il valore di %eax in 'elementi22'

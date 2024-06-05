@@ -124,6 +124,9 @@ _edf_algorith:
 
     call edf
 
+    jmp _loop_choose_algorith
+
+
 _hpf_algorith:
     movl array_ptr, %eax
     movl array_size, %ebx

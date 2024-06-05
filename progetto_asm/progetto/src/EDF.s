@@ -1,10 +1,10 @@
 .section .data
 
-scelta2: .ascii "\n✅ Hai scelto l'algoritmo EDF ✅\n\n"
-scelta2lenght: .long . - scelta2
-
 ordinamento_e: .ascii "\n✅ Ordinamento per durata effettuato ✅\n\n"
 ordinamento_e_lenght: .long . - ordinamento_e
+
+scelta2: .ascii "Hai scelto l'algoritmo EDF "
+scelta2lenght: .long . - scelta2
 
 separatore: .ascii ":"
 separatorelenght: .long . - separatore
@@ -51,12 +51,6 @@ edf:
 	int $0x80             # Execute syscall
 
 	mov $0, %ecx            #   Inizializza il contatore esterno (indice i)
-
-	movl $4, %eax	        # Set system call WRITE
-	movl $1, %ebx	        # | <- standard output (video)
-	leal array_size, %ecx        # | <- destination
-	movl array_size_lenght, %edx        # | <- length
-	int $0x80             # Execute syscall
 
 ordinamento:
 	movl array_size, %eax  # Carica il valore di 'array_size' nel registro %eax

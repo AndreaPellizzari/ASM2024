@@ -7,21 +7,3 @@ Pianificazione HPF:
 12:35
 Conclusione: 42
 Penalty: 95
-
-Pianificazione HPF:
-4:0
-6:10
-5:19
-3:27
-12:35
-Conclusione: 42
-Penalty: 95
-
-Pianificazione HPF:
-4:0
-6:10
-5:19
-3:27
-12:35
-Conclusione: 42
-Penalty: 95
