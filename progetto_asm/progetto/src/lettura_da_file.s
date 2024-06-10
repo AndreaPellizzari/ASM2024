@@ -7,6 +7,8 @@ fd:
 buffer: .string ""       # Spazio per il buffer di input
 newline: .byte 10        # Valore del simbolo di nuova linea
 lines: .int 0            # Numero di linee
+error_char: "❌ Errore - Letto char invalido dal file di input ❌ \n"
+error_char_lenght: .long . - error_char
 
 .section .bss
 
@@ -40,8 +42,23 @@ _read_loop:
     # Controllo se ho una nuova linea
     movb buffer, %al    # copio il carattere dal buffer ad AL
     cmpb newline, %al   # confronto AL con il carattere \n
-    jne _print_line     # se sono diversi stampo la linea
+    jne _check_char     # se sono diversi stampo la controllo il char
     incw lines          # altrimenti, incremento il contatore
+
+_check_char:
+    # Controlla se il carattere è un numero (0-9) o una virgola (,)
+    cmpb $48, %al       # Controlla se il carattere è >= '0' (ASCII 48)
+    jl _invalid_char    # Se è minore di '0', è un carattere non valido
+    cmpb $57, %al       # Controlla se il carattere è <= '9' (ASCII 57)
+    jle _save_line      # Se è un numero, salvalo
+    cmpb $44, %al       # Controlla se il carattere è ','
+    je _virgola_trovata # Se è una virgola, gestiscila
+
+_invalid_char:
+    # Gestione del carattere non valido
+    
+    jmp _close_file     # Salta alla gestione degli errori per il carattere non valido
+
 
 _print_line:
     # Stampa il contenuto della riga

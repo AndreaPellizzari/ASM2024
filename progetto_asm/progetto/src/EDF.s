@@ -3,7 +3,7 @@
 ordinamento_e: .ascii "\n✅ Ordinamento per durata effettuato ✅\n\n"
 ordinamento_e_lenght: .long . - ordinamento_e
 
-scelta2: .ascii "\nPianificazione HPF:\n"
+scelta2: .ascii "\nPianificazione EDF:\n"
 scelta2lenght: .long . - scelta2
 
 separatore: .ascii ":"

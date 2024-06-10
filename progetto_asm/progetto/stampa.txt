@@ -1,5 +1,5 @@
 
-Pianificazione HPF:
+Pianificazione EDF:
 5:0
 4:8
 6:18

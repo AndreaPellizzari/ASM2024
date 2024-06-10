@@ -15,6 +15,12 @@ array_size: .long 0                                                     # dimens
 error_file2: .ascii "❌ Errore - File inesistente ❌ \n"
 error_file_lenght2: .long . - error_file2
 
+error_char: .ascii "❌ Errore - Letto char invalido dal file di input ❌ \n"
+error_char_lenght: .long . - error_char
+
+error_valore_invalido: .ascii "❌ Errore - Letto valore invalido dal file di input ❌ \n"
+error_valore_invalido_lenght: .long . - error_valore_invalido
+
 .section .bss
     path_input: .space 35                                                   # path del file di input
 
@@ -81,8 +87,25 @@ _read_loop:
     
     # Controllo se ho una nuova linea
     movb buffer, %al    # copio il carattere dal buffer ad AL
-    cmpb newline, %al   # confronto AL con il carattere \n
-    jne _save_line     # se sono diversi stampo la linea
+
+    # Controlla se il carattere è un numero (0-9) o una virgola (,)
+    cmpb $44, %al       # Controlla se il carattere è ','
+    je _virgola_trovata # Se è una virgola, gestiscila
+    cmpb newline, %al   # se è caporiga
+    je _parametro4
+    cmpb $48, %al       # Controlla se il carattere è >= '0' (ASCII 48)
+    jl _error_char    # Se è minore di '0', è un carattere non valido
+    cmpb $57, %al       # Controlla se il carattere è <= '9' (ASCII 57)
+    jle _save_line      # Se è un numero, salvalo
+    
+    jmp _error_char     # Salta alla gestione degli errori per il carattere non valido
+
+_parametro4:
+    movl temp, %ebx
+    cmpl $1, %ebx                        # controllo che sia > 0
+    jl _error_valore 
+    cmpl $5, %ebx                        # controllo <= 5
+    jg _error_valore                     # Se è un numero, salvalo   
 
     # salvo in memoria, vale per il parametro 4
     movl array_ptr, %edi                # Carica l'indirizzo di memoria dell'array di strutture in EDI
@@ -122,6 +145,15 @@ _save_line:
     jmp _read_loop      # Torna alla lettura del file
 
 _virgola_trovata:
+    movl i, %ebx
+    cmpl $0, %ebx
+    jmp check0
+    cmpl $1, %ebx
+    jmp check1
+    cmpl $2, %ebx
+    jmp check2
+
+save:
     # salvo in memoria, vale per i parametri 1,2,3
     movl array_ptr, %edi                # Carica l'indirizzo di memoria dell'array di strutture in EDI
     movl lines, %ecx                    # Carica il numero corrente di linee lette in ECX (indice dell'array)
@@ -142,6 +174,12 @@ _virgola_trovata:
 
 # Chiude il file
 _close_file:
+    movl temp, %ebx
+    cmpl $1, %ebx                        # controllo che sia > 0
+    jl _error_valore 
+    cmpl $5, %ebx                        # controllo <= 5
+    jg _error_valore                     # Se è un numero, salvalo
+
     movl array_ptr, %edi                # Carica l'indirizzo di memoria dell'array di strutture in EDI
     movl lines, %ecx                    # Carica il numero corrente di linee lette in ECX (indice dell'array)
     imull struct_size, %ecx            # Calcola l'offset (dimensione di ogni struttura * numero righe)
@@ -179,6 +217,63 @@ _error_file:
 	int $0x80             			# Execute syscall
 
     jmp _exit_error
+
+_error_char:
+
+    movl $4, %eax	        		# Set system call WRITE
+	movl $1, %ebx	        		# | <- standard output (video)
+	leal error_char, %ecx        		# | <- destination
+	movl error_char_lenght, %edx        # | <- length
+	int $0x80             			# Execute syscall
+
+    # close file
+    mov $6, %eax        # syscall close
+    mov fd, %ebx        # File descriptor
+    int $0x80           # Interruzione del kernel
+
+    jmp _exit_error
+
+_error_valore:
+
+    movl $4, %eax	        		# Set system call WRITE
+	movl $1, %ebx	        		# | <- standard output (video)
+	leal error_valore_invalido, %ecx        		# | <- destination
+	movl error_valore_invalido_lenght, %edx        # | <- length
+	int $0x80             			# Execute syscall
+
+    # close file
+    mov $6, %eax        # syscall close
+    mov fd, %ebx        # File descriptor
+    int $0x80           # Interruzione del kernel
+
+    jmp _exit_error
+
+check0:
+    movl temp, %ebx
+    cmpl $1, %ebx                        # controllo che sia >= 1
+    jl _error_valore 
+    cmpl $127, %ebx                        # controllo <= 127
+    jg _error_valore      # Se è un numero, salvalo
+
+    jmp save
+
+check1:
+    movl temp, %ebx
+    cmpl $1, %ebx                        # controllo che sia >= 1
+    jl _error_valore 
+    cmpl $10, %ebx                        # controllo <= 10
+    jg _error_valore      # Se è un numero, salvalo
+
+    jmp save
+
+check2:
+    movl temp, %ebx
+    cmpl $1, %ebx                        # controllo che sia > 0
+    jl _error_valore 
+    cmpl $100, %ebx                        # controllo <= 100
+    jg _error_valore        # Se è un numero, salvalo
+
+    jmp save
 
 # ------------------------------------------------------------------------
 # apertura del file in modalità di lettura
