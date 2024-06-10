@@ -3,7 +3,7 @@
 ordinamento_e: .ascii "\n✅ Ordinamento per durata effettuato ✅\n\n"
 ordinamento_e_lenght: .long . - ordinamento_e
 
-scelta2: .ascii "Hai scelto l'algoritmo EDF "
+scelta2: .ascii "\nPianificazione HPF:\n"
 scelta2lenght: .long . - scelta2
 
 separatore: .ascii ":"
@@ -54,11 +54,18 @@ edf:
 	movl %ecx, sceltascrittura2
 	movl %edx, fd2
 
-    movl $4, %eax	        # Set system call WRITE
-	movl $1, %ebx	        # | <- standard output (video)
-	leal scelta2, %ecx        # | <- destination
+    movl $4, %eax	        		# Set system call WRITE
+	movl $1, %ebx	        		# | <- standard output (video)
+	leal scelta2, %ecx        		# | <- destination
 	movl scelta2lenght, %edx        # | <- length
-	int $0x80             # Execute syscall
+	int $0x80             			# Execute syscall
+
+	
+    movl $4, %eax	        		# Set system call WRITE
+	movl fd2, %ebx	        		# | <- standard output (video)
+	leal scelta2, %ecx        		# | <- destination
+	movl scelta2lenght, %edx        # | <- length
+	int $0x80             			# Execute syscall
 
 	mov $0, %ecx            #   Inizializza il contatore esterno (indice i)
 

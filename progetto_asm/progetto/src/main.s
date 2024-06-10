@@ -8,6 +8,12 @@
     stringwrite: .ascii "stampa avvenuta con successo!"
     stringwritelgth: .long . - stringwrite
 
+    error_input: .ascii "❌ Errore - Inserire il file input come parametro ❌ \n"
+    error_input_lenght: .long . - error_input
+
+    error_file: .ascii "❌ Errore - file scrittura ❌ \n"
+    error_file_lenght: .long . - error_file
+
     path: .string "./Ordini/"
     sceltascrittura: .int 0
 
@@ -29,16 +35,16 @@ _save_second_param:
     movl $1, sceltascrittura                                                # imposto che vorrò scrivere su file
     movl %ecx, filename
     # apro il file in scrittura
-    movl $5, %eax                        # syscall open
-    movl (filename), %ebx               # Nome del file
-    movl $0x242, %ecx                    # Modalità di apertura (O_CREAT | O_WRONLY)
-    movl $0x1A4, %edx                    # Permessi del file (0644 in ottale)
-    int $0x80                            # Interruzione del kernel
+    movl $5, %eax                                                           # syscall open
+    movl (filename), %ebx                                                   # Nome del file
+    movl $0x242, %ecx                                                       # Modalità di apertura (O_CREAT | O_WRONLY)
+    movl $0x1A4, %edx                                                       # Permessi del file (0644 in ottale)
+    int $0x80                                                               # Interruzione del kernel
 
     # Se c'è un errore, esce
     cmpl $0, %eax
-    jle _exit
-    movl %eax, fd1                       # Salva il file descriptor in ebx
+    jle _error_file
+    movl %eax, fd1                                                          # Salva il file descriptor in ebx
 
     jmp salva_dati
 
@@ -48,6 +54,8 @@ _save_param:
     popl %ecx                                                               # contiene il numero di paramentri, che dovranno essere minimo 1 e massimo 2
     popl %ecx                                                               # contiene il nome della funzione
     popl %ecx                                                               # prendo il parametro che mi interessa
+    cmpl $0, %ecx
+    je _error_param
     call _saveparam                                                         # in ecx ho il risultato e edx la lunghezza
     movl %ecx, filename                                                     # sposto il parametro in filename
     call concatena_input                                                    # richiamo al funzione di concatenzione con file_input
@@ -117,10 +125,17 @@ _exit:
     movl $0, %ebx                                                           # codice di uscita 0
     int $0x80
 
+_exit_error:
+    movl $1, %eax                                                           # Systemcall EXIT
+    movl $1, %ebx                                                           # codice di uscita 0
+    int $0x80
+
+
 _edf_algorith:
     movl array_ptr, %eax
     movl array_size, %ebx
     movl sceltascrittura, %ecx
+    movl fd1, %edx
 
     call edf
 
@@ -148,6 +163,24 @@ _hpf_algorith:
     # int $0x80
     
     jmp _loop_choose_algorith
+
+_error_param:
+    movl $4, %eax	        		# Set system call WRITE
+	movl $1, %ebx	        		# | <- standard output (video)
+	leal error_input, %ecx        		# | <- destination
+	movl error_input_lenght, %edx        # | <- length
+	int $0x80             			# Execute syscall
+
+    jmp _exit_error
+
+_error_file:
+    movl $4, %eax	        		# Set system call WRITE
+	movl $1, %ebx	        		# | <- standard output (video)
+	leal error_file, %ecx        		# | <- destination
+	movl error_file_lenght, %edx        # | <- length
+	int $0x80             			# Execute syscall
+
+    jmp _exit_error
 
 
 # ---------------------------------------------------

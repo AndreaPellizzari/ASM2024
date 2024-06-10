@@ -12,6 +12,9 @@ struct_size: .long 16                                                   # dimens
 struct_item_size: .long 4                                               # dimensione della singola cella di array
 array_size: .long 0                                                     # dimensione iniziale dell'array
 
+error_file2: .ascii "❌ Errore - File inesistente ❌ \n"
+error_file_lenght2: .long . - error_file2
+
 .section .bss
     path_input: .space 35                                                   # path del file di input
 
@@ -19,8 +22,6 @@ array_size: .long 0                                                     # dimens
     .global _save_data
 
 .type _save_data, @function
-
-
 _save_data:
     movl %eax, %ebx
     movl %ebx, path_input
@@ -62,7 +63,7 @@ _open:
 
     # Se c'è un errore, esce
     cmpl $0, %eax
-    jl _exit
+    jl _error_file
 
     movl %eax, fd      # Salva il file descriptor in ebx
 
@@ -170,6 +171,15 @@ _exit_error:
     movl $1, %ebx      # Codice di uscita 0
     int $0x80           # Interruzione del kernel
 
+_error_file:
+    movl $4, %eax	        		# Set system call WRITE
+	movl $1, %ebx	        		# | <- standard output (video)
+	leal error_file2, %ecx        		# | <- destination
+	movl error_file_lenght2, %edx        # | <- length
+	int $0x80             			# Execute syscall
+
+    jmp _exit_error
+
 # ------------------------------------------------------------------------
 # apertura del file in modalità di lettura
 .type openfile, @function
@@ -198,7 +208,7 @@ _opencountfile:
 
     # Se c'è un errore, esce
     cmpl $0, %eax
-    jl _exit
+    jl _error_file
     movl %eax, fd      # Salva il file descriptor in ebx
 
 readcount_loop:
