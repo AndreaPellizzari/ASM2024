@@ -383,6 +383,8 @@ fine:
 
 	# stampa su file
 	# Stampa Conclusione -> durata2
+	cmpl $1, sceltascrittura3
+	jne eb
 	movl $4, %eax	        		# Set system call WRITE
 	movl fd1, %ebx	        		# | <- standard output (video)
 	leal conclusione, %ecx        	# | <- destination
@@ -410,6 +412,7 @@ fine:
 	movl $1, %edx        # | <- length
 	int $0x80             # Execute syscall
 
+eb:
 	movl $0, penalita2
 	movl $0, durata2
 

@@ -60,6 +60,8 @@ edf:
 	movl scelta2lenght, %edx        # | <- length
 	int $0x80             			# Execute syscall
 
+	cmpl $1, sceltascrittura2
+	jne a
 	
     movl $4, %eax	        		# Set system call WRITE
 	movl fd2, %ebx	        		# | <- standard output (video)
@@ -67,6 +69,7 @@ edf:
 	movl scelta2lenght, %edx        # | <- length
 	int $0x80             			# Execute syscall
 
+a:
 	mov $0, %ecx            #   Inizializza il contatore esterno (indice i)
 
 ordinamento:
@@ -376,6 +379,9 @@ fine:
 
 	# stampa su file
 	# Stampa Conclusione -> durata2
+	cmpl $1, sceltascrittura2
+	jne eb
+	
 	movl $4, %eax	        		# Set system call WRITE
 	movl fd2, %ebx	        		# | <- standard output (video)
 	leal conclusione2, %ecx        	# | <- destination
@@ -403,6 +409,7 @@ fine:
 	movl $1, %edx        # | <- length
 	int $0x80             # Execute syscall
 
+eb:
 	movl $0, penalita1
 	movl $0, durata
 

@@ -11,7 +11,7 @@
     error_input: .ascii "❌ Errore - Inserire il file input come parametro ❌ \n"
     error_input_lenght: .long . - error_input
 
-    error_file: .ascii "❌ Errore - file scrittura ❌ \n"
+    error_file: .ascii "❌ Errore - file di scrittura ❌ \n"
     error_file_lenght: .long . - error_file
 
     path: .string "./Ordini/"
@@ -149,18 +149,6 @@ _hpf_algorith:
     movl fd1, %edx
 
     call hpf
-
-    # stampa su file 
-    cmpl $1, sceltascrittura
-    jne _loop_choose_algorith
-
-    # QUI ANDRA INSERITO IL CICLO DI STAMPA DEL FILE
-
-    # movl $4, %eax                       # syscall wrtie
-    # movl fd1, %ebx                       # File descriptor
-    # movl $stringwrite, %ecx             # Buffer di input
-    # movl stringwritelgth, %edx          # Lunghezza massima
-    # int $0x80
     
     jmp _loop_choose_algorith
 
