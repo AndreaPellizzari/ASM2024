@@ -82,6 +82,8 @@ ordinamento:
     shrl $4, %eax         # Esegui lo shift a destra di 4 bit (divisone per 16)
     movl %eax, elementi2   # Salva il risultato di nuovo in 'elementi2'
 
+	addl $1, elementi2
+
 passo1:
 	movl $0, i12
 
