@@ -28,5 +28,5 @@ obj/readfile.o: src/readfile.s
 obj/itoafile.o: src/itoafile.s
 	as $(AS_FLAGS) $(DEBUG) src/itoafile.s -o obj/itoafile.o
 
-#clean:
-#	rm -f obj/*.o bin/itoa
+clean:
+	rm -f ./obj/*.o ./bin/pianificatore
