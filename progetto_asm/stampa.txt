@@ -1,28 +1,56 @@
 
 Pianificazione EDF:
-1:0
-2:2
-5:6
-7:9
-9:17
-4:21
-2:27
-6:30
-8:39
-3:40
-Conclusione: 42
-Penalty: 0
+10:0
+8:8
+5:16
+4:24
+6:34
+1:43
+7:53
+3:62
+11:70
+12:77
+Conclusione: 84
+Penalty: 570
 
 Pianificazione HPF:
 4:0
-9:6
-1:10
-2:12
-2:16
-5:19
-7:22
-6:30
-8:39
-3:40
-Conclusione: 42
-Penalty: 63
+6:10
+10:19
+8:27
+5:35
+1:43
+3:53
+7:61
+11:70
+12:77
+Conclusione: 84
+Penalty: 514
+
+Pianificazione EDF:
+10:0
+8:8
+5:16
+4:24
+6:34
+1:43
+7:53
+3:62
+11:70
+12:77
+Conclusione: 84
+Penalty: 570
+
+Pianificazione HPF:
+4:0
+6:10
+10:19
+8:27
+5:35
+1:43
+3:53
+7:61
+11:70
+12:77
+Conclusione: 84
+Penalty: 514

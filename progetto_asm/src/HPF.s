@@ -265,6 +265,7 @@ conteggio:
 loop_conteggio:
 	
 	movl elementi2, %eax
+	subl $1, %eax
 	cmpl %eax, i12
 	jg _continua_2
 		
