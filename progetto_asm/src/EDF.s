@@ -209,14 +209,15 @@ cambio_indici:
 parita:
 	movl elemento_ptr, %ecx
 	movl %ecx, temp
-	addl $4, temp
-	movl (temp), %ecx
-	movl %ecx, temp
+	addl $4, %ecx
+	movl (%ecx), %eax
+	movl %eax, temp
+	movl temp, %ecx
 	movl elemento_successivo_ptr, %edx
 	movl %edx, temp2
-	addl $4, temp2
-	movl (temp2), %edx
-	movl %edx, temp2
+	addl $4, %edx
+	movl (%edx), %eax
+	movl %eax, temp2
 
 	cmp %ecx, temp2
 	jg scambio
