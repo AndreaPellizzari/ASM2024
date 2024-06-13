@@ -66,7 +66,7 @@ _save_param:
 salva_dati:
     movl $path_input, %eax                                                  # Mi passo il l'indirizzo di path_input
     call _save_data                                                         # salvataggio dei dati in uno spazio di memoria dinamica, ricevo l'indirizzo in EAX
-    movl %eax, array_ptr                                                         # Carica il contenuto di memoria all'indirizzo puntato da eax in edx
+    movl %eax, array_ptr                                                    # Carica il contenuto di memoria all'indirizzo puntato da eax in edx
     movl %ebx, array_size
 
     # inizializzo le variabili per la stampa
@@ -117,9 +117,9 @@ _loop_choose_algorith:
 
 _exit:
     # CHIUSURA FILE
-    movl $6, %eax        # syscall close
-    movl fd1, %ecx      # File descriptor
-    int $0x80           # Interruzione del kernel
+    movl $6, %eax                                                           # syscall close
+    movl fd1, %ecx                                                          # File descriptor
+    int $0x80                                                               # Interruzione del kernel
 
     movl $1, %eax                                                           # Systemcall EXIT
     movl $0, %ebx                                                           # codice di uscita 0
@@ -153,20 +153,20 @@ _hpf_algorith:
     jmp _loop_choose_algorith
 
 _error_param:
-    movl $4, %eax	        		# Set system call WRITE
-	movl $1, %ebx	        		# | <- standard output (video)
-	leal error_input, %ecx        		# | <- destination
-	movl error_input_lenght, %edx        # | <- length
-	int $0x80             			# Execute syscall
+    movl $4, %eax	        		                                    # Set system call WRITE
+	movl $1, %ebx	        		                                    # | <- standard output (video)
+	leal error_input, %ecx        		                                # | <- destination
+	movl error_input_lenght, %edx                                       # | <- length
+	int $0x80             			                                    # Execute syscall
 
     jmp _exit_error
 
 _error_file:
-    movl $4, %eax	        		# Set system call WRITE
-	movl $1, %ebx	        		# | <- standard output (video)
-	leal error_file, %ecx        		# | <- destination
-	movl error_file_lenght, %edx        # | <- length
-	int $0x80             			# Execute syscall
+    movl $4, %eax	        		                                    # Set system call WRITE
+	movl $1, %ebx	        		                                    # | <- standard output (video)
+	leal error_file, %ecx        		                                # | <- destination
+	movl error_file_lenght, %edx                                        # | <- length
+	int $0x80             			                                    # Execute syscall
 
     jmp _exit_error
 
@@ -200,12 +200,5 @@ copy_filename_input:
     inc %edi                                                            # Incrementa %edi per il prossimo byte
     testb %al, %al                                                      # Controlla se %al è zero (terminatore di stringa)
     jnz copy_filename_input                                             # Se non è il terminatore, continua a copiare
-
-    # stampa della concatenazione
-#    movl $4, %eax                                                      # Syscall numero per sys_write
-#    movl $1, %ebx                                                      # File descriptor 1 (stdout)
- #   movl $path_input, %ecx                                             # Puntatore alla stringa da stampare
-##    movl $35, %edx                                                    # Lunghezza massima della stringa
- #   int $0x80                                                          # Interruzione del kernel
 
     ret

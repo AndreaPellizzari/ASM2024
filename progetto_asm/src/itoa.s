@@ -104,15 +104,5 @@ stampa:
 
 fine_itoa:
 
-#	movb  $10, car		# copia nella variabile car il codice ascii 
-						# del carattere line feed (per andare a 
-						# capo riga)
-
-#	movl   $4, %eax
-#	movl   $1, %ebx
-#	leal  car, %ecx
-#	mov    $1, %edx
-#	int $0x80
-
 	ret
 

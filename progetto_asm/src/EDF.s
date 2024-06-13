@@ -54,31 +54,31 @@ edf:
 	movl %ecx, sceltascrittura2
 	movl %edx, fd2
 
-    movl $4, %eax	        		# Set system call WRITE
-	movl $1, %ebx	        		# | <- standard output (video)
-	leal scelta2, %ecx        		# | <- destination
-	movl scelta2lenght, %edx        # | <- length
-	int $0x80             			# Execute syscall
+    movl $4, %eax	        											# Set system call WRITE
+	movl $1, %ebx	        											# | <- standard output (video)
+	leal scelta2, %ecx        											# | <- destination
+	movl scelta2lenght, %edx        									# | <- length
+	int $0x80             												# Execute syscall
 
 	cmpl $1, sceltascrittura2
 	jne a
 	
-    movl $4, %eax	        		# Set system call WRITE
-	movl fd2, %ebx	        		# | <- standard output (video)
-	leal scelta2, %ecx        		# | <- destination
-	movl scelta2lenght, %edx        # | <- length
-	int $0x80             			# Execute syscall
+    movl $4, %eax	        											# Set system call WRITE
+	movl fd2, %ebx	        											# | <- standard output (video)
+	leal scelta2, %ecx        											# | <- destination
+	movl scelta2lenght, %edx        									# | <- length
+	int $0x80             												# Execute syscall
 
 a:
-	mov $0, %ecx            #   Inizializza il contatore esterno (indice i)
+	mov $0, %ecx            											# Inizializza il contatore esterno (indice i)
 
 ordinamento:
-	movl array_size, %eax  # Carica il valore di 'array_size' nel registro %eax
-    movl %eax, elementi    # Copia il valore di %eax in 'elementi'
+	movl array_size, %eax  												# Carica il valore di 'array_size' nel registro %eax
+    movl %eax, elementi    												# Copia il valore di %eax in 'elementi'
 
-	movl elementi, %eax   # Carica il valore di 'elementi' nel registro %eax
-    shrl $4, %eax         # Esegui lo shift a destra di 4 bit (divisone per 16)
-    movl %eax, elementi   # Salva il risultato di nuovo in 'elementi'
+	movl elementi, %eax   												# Carica il valore di 'elementi' nel registro %eax
+    shrl $4, %eax         												# Esegui lo shift a destra di 4 bit (divisone per 16)
+    movl %eax, elementi   												# Salva il risultato di nuovo in 'elementi'
 
 	addl $1, elementi
 
@@ -118,10 +118,10 @@ loop_2:
 
 	# Le righe che seguono servono ad inserire in elemento il valore da controllare , ciò è stato scritto così
 	# per smarcare qualsiasi problema di mismatch tra gli operandi
-	movl indice, %eax    # Carica il valore di array_ptr (indirizzo dell'array) in %eax
-    movl (%eax), %ebx       # Carica il valore puntato da %eax (primo elemento dell'array) in %ebx
+	movl indice, %eax    												# Carica il valore di array_ptr (indirizzo dell'array) in %eax
+    movl (%eax), %ebx       											# Carica il valore puntato da %eax (primo elemento dell'array) in %ebx
 	movl %eax, elemento_ptr
-    movl %ebx, elemento     # Salva il valore di %ebx in 'elemento'
+    movl %ebx, elemento     											# Salva il valore di %ebx in 'elemento'
 
 	# Le righe che seguono servono ad inserire in elemento il valore da controllare , ciò è stato scritto così
 	# per smarcare qualsiasi problema di mismatch tra gli operandi
@@ -141,9 +141,6 @@ loop_2:
 	jmp cambio_indici
 	
 scambio:
-	#	movl elemento, %eax
-	#	movl elemento_successivo, %ebx
-
 	movl elemento_ptr, %ecx
 	movl %ecx, temp
 	subl $8, temp
@@ -189,16 +186,7 @@ scambio:
 	movl (%edx), %ebx
 	movl %eax, (%edx)
 	movl %ebx, (%ecx)
-	
-	#	movl elemento_successivo_ptr, %eax
-	#	movl %eax, elemento_ptr
-	#	addl $16, %eax
-	#	movl %eax, elemento_successivo_ptr
 
-	#	movl elemento_ptr, %ecx
-	#	movl elemento_successivo_ptr, %edx
-	#	movl %eax, (%edx)
-	#	movl %ebx, (%ecx)
 
 cambio_indici:
 	movl elemento_successivo_ptr, %eax
@@ -230,7 +218,7 @@ penalita:
 	movl margine, %ebx
 
 	subl %ebx, %eax
-	imull priorita, %eax     # Moltiplica il valore di %ebx per %eax, risultato in %eax
+	imull priorita, %eax     											# Moltiplica il valore di %ebx per %eax, risultato in %eax
 	addl %eax, penalita1
 
 	jmp cambio
@@ -283,14 +271,14 @@ loop_conteggio:
 	
 	movl durata, %eax
 	movl fd2, %ebx
-	call itoa		# stampa durata
+	call itoa						# stampa durata
 
 	# stampa \n
-	movl $4, %eax	        # Set system call WRITE
-	movl $1, %ebx	        # | <- standard output (video)
-	leal caporiga2, %ecx        # | <- destination
-	movl $1, %edx        # | <- length
-	int $0x80             # Execute syscall	
+	movl $4, %eax	        		# Set system call WRITE
+	movl $1, %ebx	        		# | <- standard output (video)
+	leal caporiga2, %ecx        	# | <- destination
+	movl $1, %edx        			# | <- length
+	int $0x80             			# Execute syscall	
 		
 	# stampa su file
 	movl elemento_ptr, %eax
@@ -313,12 +301,7 @@ _continua_2:
 
 	cmp durata, %eax
 	jl penalita
-	#	movl elemento_ptr2, %eax
-	#	addl $16, %eax
-	#	movl %eax, %ecx
-	#	movl %ecx, %eax
-	#	movl (%eax), %ebx
-	#	addl %ebx, durata2
+
 
 cambio:
 	movl elemento_ptr, %eax
@@ -355,63 +338,63 @@ cambio:
 
 fine:
 	# stampa a video
-	#	Stampa Conclusione -> durata2
-	movl $4, %eax	        		# Set system call WRITE
-	movl $1, %ebx	        		# | <- standard output (video)
-	leal conclusione2, %ecx        	# | <- destination
-	movl conclusionelenght2, %edx    # | <- length
-	int $0x80             			# Execute syscall
+	# Stampa Conclusione -> durata2
+	movl $4, %eax	        											# Set system call WRITE
+	movl $1, %ebx	        											# | <- standard output (video)
+	leal conclusione2, %ecx        										# | <- destination
+	movl conclusionelenght2, %edx    									# | <- length
+	int $0x80             												# Execute syscall
 
 	movl durata, %eax
 	call itoa	
 	#	Stampa Penalità -> penalita2
-	movl $4, %eax	        		# Set system call WRITE
-	movl $1, %ebx	        		# | <- standard output (video)
-	leal penalty2, %ecx        		# | <- destination
-	movl penaltylenght2, %edx    	# | <- length
-	int $0x80             			# Execute syscall
+	movl $4, %eax	        											# Set system call WRITE
+	movl $1, %ebx	        											# | <- standard output (video)
+	leal penalty2, %ecx        											# | <- destination
+	movl penaltylenght2, %edx    										# | <- length
+	int $0x80             												# Execute syscall
 
 	movl penalita1, %eax
 	call itoa
 
 	# stampa caporiga
-	movl $4, %eax	        		# Set system call WRITE
-	movl $1, %ebx	        		# | <- standard output (video)
-	leal caporiga2, %ecx        		# | <- destination
-	movl $1, %edx    	# | <- length
-	int $0x80             			# Execute syscall
+	movl $4, %eax	        											# Set system call WRITE
+	movl $1, %ebx	        											# | <- standard output (video)
+	leal caporiga2, %ecx        										# | <- destination
+	movl $1, %edx    													# | <- length
+	int $0x80             												# Execute syscall
 
 	# stampa su file
 	# Stampa Conclusione -> durata2
 	cmpl $1, sceltascrittura2
 	jne eb
 	
-	movl $4, %eax	        		# Set system call WRITE
-	movl fd2, %ebx	        		# | <- standard output (video)
-	leal conclusione2, %ecx        	# | <- destination
-	movl conclusionelenght2, %edx    # | <- length
-	int $0x80             			# Execute syscall
+	movl $4, %eax	        										    # Set system call WRITE
+	movl fd2, %ebx	        											# | <- standard output (video)
+	leal conclusione2, %ecx        										# | <- destination
+	movl conclusionelenght2, %edx    									# | <- length
+	int $0x80             												# Execute syscall
 
 	movl durata, %eax
 	movl fd2, %ebx
 	call itoafile	
 	#	Stampa Penalità -> penalita2
-	movl $4, %eax	        		# Set system call WRITE
-	movl fd2, %ebx	        		# | <- standard output (video)
-	leal penalty2, %ecx        		# | <- destination
-	movl penaltylenght2, %edx    	# | <- length
-	int $0x80             			# Execute syscall
+	movl $4, %eax	        											# Set system call WRITE
+	movl fd2, %ebx	        											# | <- standard output (video)
+	leal penalty2, %ecx        											# | <- destination
+	movl penaltylenght2, %edx    										# | <- length
+	int $0x80             												# Execute syscall
 
 	movl penalita1, %eax
 	movl fd2, %ebx
 	call itoafile
 	
 	# stampa \n
-	movl $4, %eax	        # Set system call WRITE
-	movl fd2, %ebx	        # | <- standard output (video)
-	leal caporiga2, %ecx        # | <- destination
-	movl $1, %edx        # | <- length
-	int $0x80             # Execute syscall
+	movl $4, %eax	        											# Set system call WRITE
+	movl fd2, %ebx	        											# | <- standard output (video)
+	leal caporiga2, %ecx        										# | <- destination
+	movl $1, %edx        												# | <- length
+	int $0x80             												# Execute syscall
 
 eb:
 	movl $0, penalita1
@@ -422,31 +405,31 @@ eb:
 # stampa linea 
 _stampaparametrofile:
 
-	call itoafile		# stampa ID
+	call itoafile														# stampa ID
 
 	# stampa :
-	movl $4, %eax	        # Set system call WRITE
-	movl fd2, %ebx	        # | <- standard output (video)
-	leal separatore, %ecx        # | <- destination
-	movl $1, %edx        # | <- length
-	int $0x80             # Execute syscall
+	movl $4, %eax	        											# Set system call WRITE
+	movl fd2, %ebx	        											# | <- standard output (video)
+	leal separatore, %ecx        										# | <- destination
+	movl $1, %edx        												# | <- length
+	int $0x80             												# Execute syscall
 	
 	movl durata, %eax
 	movl fd2, %ebx
 
-	call itoafile		# stampa durata
+	call itoafile														# stampa durata
 
 	# stampa \n
-	movl $4, %eax	        # Set system call WRITE
-	movl fd2, %ebx	        # | <- standard output (video)
-	leal caporiga2, %ecx        # | <- destination
-	movl $1, %edx        # | <- length
-	int $0x80             # Execute syscall
+	movl $4, %eax	        											# Set system call WRITE
+	movl fd2, %ebx	        											# | <- standard output (video)
+	leal caporiga2, %ecx        										# | <- destination
+	movl $1, %edx        												# | <- length
+	int $0x80             												# Execute syscall
 
 jmp _continua_2
 
 
 _exit:
-    movl $1, %eax                                                           # Systemcall EXIT
-    movl $1, %ebx                                                           # codice di uscita 1 (error)
+    movl $1, %eax                                                      	# Systemcall EXIT
+    movl $1, %ebx                                                       # codice di uscita 1 (error)
     int $0x80

@@ -72,15 +72,15 @@ hpf:
 	int $0x80             			# Execute syscall
 
 _continua_1:
-	mov $0, %ecx            #   Inizializza il contatore esterno (indice2 i)
+	mov $0, %ecx            		#   Inizializza il contatore esterno (indice2 i)
 
 ordinamento:
-	movl array_size, %eax  # Carica il valore di 'array_size' nel registro %eax
-    movl %eax, elementi2    # Copia il valore di %eax in 'elementi22'
+	movl array_size, %eax  			# Carica il valore di 'array_size' nel registro %eax
+    movl %eax, elementi2    		# Copia il valore di %eax in 'elementi22'
 
-	movl elementi2, %eax   # Carica il valore di 'elementi22' nel registro %eax
-    shrl $4, %eax         # Esegui lo shift a destra di 4 bit (divisone per 16)
-    movl %eax, elementi2   # Salva il risultato di nuovo in 'elementi2'
+	movl elementi2, %eax   			# Carica il valore di 'elementi22' nel registro %eax
+    shrl $4, %eax         			# Esegui lo shift a destra di 4 bit (divisone per 16)
+    movl %eax, elementi2   			# Salva il risultato di nuovo in 'elementi2'
 
 	addl $1, elementi2
 
@@ -144,8 +144,7 @@ loop_2:
 	jmp cambio_indici
 	
 scambio:
-	#	movl elemento, %eax
-	#	movl elemento_successivo, %ebx
+
 
 	movl elemento_ptr2, %ecx
 	movl %ecx, temp3
@@ -192,16 +191,6 @@ scambio:
 	movl (%edx), %ebx
 	movl %eax, (%edx)
 	movl %ebx, (%ecx)
-	
-	#	movl elemento_successivo_ptr, %eax
-	#	movl %eax, elemento_ptr
-	#	addl $16, %eax
-	#	movl %eax, elemento_successivo_ptr
-
-	#	movl elemento_ptr, %ecx
-	#	movl elemento_successivo_ptr, %edx
-	#	movl %eax, (%edx)
-	#	movl %ebx, (%ecx)
 
 cambio_indici:
 	movl elemento_successivo_ptr2, %eax
@@ -286,14 +275,14 @@ loop_conteggio:
 	
 	movl durata2, %eax
 	movl fd1, %ebx
-	call itoa		# stampa durata
+	call itoa						# stampa durata
 
 	# stampa \n
-	movl $4, %eax	        # Set system call WRITE
-	movl $1, %ebx	        # | <- standard output (video)
-	leal caporiga, %ecx        # | <- destination
-	movl $1, %edx        # | <- length
-	int $0x80             # Execute syscall	
+	movl $4, %eax	        		# Set system call WRITE
+	movl $1, %ebx	        		# | <- standard output (video)
+	leal caporiga, %ecx        		# | <- destination
+	movl $1, %edx        			# | <- length
+	int $0x80             			# Execute syscall	
 		
 	# stampa su file
 	movl elemento_ptr2, %eax
@@ -316,12 +305,6 @@ _continua_2:
 
 	cmp durata2, %eax
 	jl penalita
-	#	movl elemento_ptr2, %eax
-	#	addl $16, %eax
-	#	movl %eax, %ecx
-	#	movl %ecx, %eax
-	#	movl (%eax), %ebx
-	#	addl %ebx, durata2
 
 cambio:
 	movl elemento_ptr2, %eax
@@ -409,11 +392,11 @@ fine:
 	call itoafile
 	
 	# stampa \n
-	movl $4, %eax	        # Set system call WRITE
-	movl fd1, %ebx	        # | <- standard output (video)
-	leal caporiga, %ecx        # | <- destination
-	movl $1, %edx        # | <- length
-	int $0x80             # Execute syscall
+	movl $4, %eax	        		# Set system call WRITE
+	movl fd1, %ebx	        		# | <- standard output (video)
+	leal caporiga, %ecx        		# | <- destination
+	movl $1, %edx        			# | <- length
+	int $0x80             			# Execute syscall
 
 eb:
 	movl $0, penalita2
@@ -424,31 +407,31 @@ eb:
 # stampa linea 
 _stampaparametrofile:
 
-	call itoafile		# stampa ID
+	call itoafile					# stampa ID
 
 	# stampa :
-	movl $4, %eax	        # Set system call WRITE
-	movl fd1, %ebx	        # | <- standard output (video)
-	leal separatore2, %ecx        # | <- destination
-	movl $1, %edx        # | <- length
-	int $0x80             # Execute syscall
+	movl $4, %eax	        		# Set system call WRITE
+	movl fd1, %ebx	        		# | <- standard output (video)
+	leal separatore2, %ecx        	# | <- destination
+	movl $1, %edx        			# | <- length
+	int $0x80             			# Execute syscall
 	
 	movl durata2, %eax
 	movl fd1, %ebx
 
-	call itoafile		# stampa durata
+	call itoafile					# stampa durata
 
 	# stampa \n
-	movl $4, %eax	        # Set system call WRITE
-	movl fd1, %ebx	        # | <- standard output (video)
-	leal caporiga, %ecx        # | <- destination
-	movl $1, %edx        # | <- length
-	int $0x80             # Execute syscall
+	movl $4, %eax	        		# Set system call WRITE
+	movl fd1, %ebx	        		# | <- standard output (video)
+	leal caporiga, %ecx       	 	# | <- destination
+	movl $1, %edx        			# | <- length
+	int $0x80             			# Execute syscall
 
 jmp _continua_2
 
 
 _exit:
-    movl $1, %eax                                                           # Systemcall EXIT
-    movl $1, %ebx                                                           # codice di uscita 1 (error)
+    movl $1, %eax                  # Systemcall EXIT
+    movl $1, %ebx                  # codice di uscita 1 (error)
     int $0x80
