@@ -41,20 +41,20 @@ _save_data:
     imul struct_size, %eax
     movl %eax, array_size
 
-    # Ottieni l'attuale break
+    # Ottengo l'attuale break
     movl $45, %eax                         # Syscall 45: brk
-    xorl %ebx, %ebx                        # Passa 0 per ottenere l'attuale break
-    int $0x80                              # Effettua la syscall
-    movl %eax, %esi                        # Salva l'attuale break in %esi
+    xorl %ebx, %ebx                        # Passo 0 per ottenere l'attuale break
+    int $0x80                              # Effettuo la syscall
+    movl %eax, %esi                        # Salvo l'attuale break in %esi
 
-    # Imposta il nuovo break
-    addl array_size, %esi                  # Aggiungi la dimensione della memoria da allocare al break attuale
+    # Imposto il nuovo break
+    addl array_size, %esi                  # Aggiungo la dimensione della memoria da allocare al break attuale
     movl $45, %eax                         # Syscall 45: brk
-    movl %esi, %ebx                        # Passa il nuovo break
-    int $0x80                              # Effettua la syscall
+    movl %esi, %ebx                        # Passo il nuovo break
+    int $0x80                              # Effettuo la syscall
 
-    testl %eax, %eax                       # Controlla se il valore richiesto e quello ottenuto sono uguali
-    jl _exit_error                         # Se fallisce, esci con errore
+    testl %eax, %eax                       # Controllo se il valore richiesto e quello ottenuto sono uguali
+    jl _exit_error                         # Se fallisce, esco con errore
 
     mov %eax, array_ptr
 
