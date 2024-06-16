@@ -14,7 +14,7 @@
     error_file: .ascii "❌ Errore - file di scrittura ❌ \n"
     error_file_lenght: .long . - error_file
 
-    path: .string "./Ordini/"
+    path: .string "Ordini/"
     sceltascrittura: .int 0
 
     array_ptr: .long 0
