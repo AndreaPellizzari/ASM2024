@@ -21,7 +21,6 @@ error_char_lenght: .long . - error_char
 error_valore_invalido: .ascii "❌ Errore - Letto valore invalido dal file di input ❌ \n"
 error_valore_invalido_lenght: .long . - error_valore_invalido
 
-
 .section .bss
     path_input: .space 35                                                   # path del file di input
 

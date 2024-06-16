@@ -14,6 +14,7 @@
     error_file: .ascii "❌ Errore - file di scrittura ❌ \n"
     error_file_lenght: .long . - error_file
 
+    input: .string ""
     sceltascrittura: .int 0
 
     array_ptr: .long 0
@@ -24,18 +25,17 @@
 
 .section .bss
     scelta: .space 2 
-    input: .space 35
-    output: .space 35
+    filename: .space 20
 
 .section .text
     .global _start
 
 _save_second_param:
     movl $1, sceltascrittura                                                # imposto che vorrò scrivere su file
-    movl %ecx, output
+    movl %ecx, filename
     # apro il file in scrittura
     movl $5, %eax                                                           # syscall open
-    movl (output), %ebx                                                   # Nome del file
+    movl (filename), %ebx                                                   # Nome del file
     movl $0x242, %ecx                                                       # Modalità di apertura (O_CREAT | O_WRONLY)
     movl $0x1A4, %edx                                                       # Permessi del file (0644 in ottale)
     int $0x80                                                               # Interruzione del kernel
