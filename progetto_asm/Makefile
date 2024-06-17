@@ -29,4 +29,4 @@ obj/itoafile.o: src/itoafile.s
 	as $(AS_FLAGS) $(DEBUG) src/itoafile.s -o obj/itoafile.o
 
 clean:
-	rm -f ./obj/*.o ./bin/pianificatore
+	rm -f ./obj/*.o ./bin/pianificatore *.txt
